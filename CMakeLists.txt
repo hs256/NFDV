@@ -19,7 +19,7 @@ SET (CMAKE_CXX_STANDARD 14)
 set(antlr4-GENERATED_SRC
   ${PROJECT_SOURCE_DIR}/parser/NFCompilerLexer.cpp
   ${PROJECT_SOURCE_DIR}/parser/NFCompilerParser.cpp
-  ${PROJECT_SOURCE_DIR}/parser/NFCompilerBaseVisitor.cpp
+  #${PROJECT_SOURCE_DIR}/parser/NFCompilerBaseVisitor.cpp
   ${PROJECT_SOURCE_DIR}/parser/NFCompilerVisitor.cpp
 )
 
@@ -44,8 +44,8 @@ include_directories(
 
 set(antlr4_SRC
   ${PROJECT_SOURCE_DIR}/main.cpp
-  # ${PROJECT_SOURCE_DIR}/ImageVisitor.cpp
-  #${PROJECT_SOURCE_DIR}/Scene.cpp
+  ${PROJECT_SOURCE_DIR}/symbol.cpp
+  ${PROJECT_SOURCE_DIR}/symboltable.cpp
   ${antlr4-GENERATED_SRC}
 )
 
