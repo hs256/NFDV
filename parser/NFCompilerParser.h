@@ -89,6 +89,7 @@ public:
     DeclarationContext *declaration();
     EntriesContext *entries();
     antlr4::tree::TerminalNode *RCB();
+    antlr4::tree::TerminalNode *EOF();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -154,10 +155,8 @@ public:
   public:
     Action_statementsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    std::vector<Action_flowContext *> action_flow();
-    Action_flowContext* action_flow(size_t i);
-    std::vector<Action_stateContext *> action_state();
-    Action_stateContext* action_state(size_t i);
+    Action_flowContext *action_flow();
+    Action_stateContext *action_state();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;

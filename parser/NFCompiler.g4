@@ -22,7 +22,7 @@ program  :
 	START  IDENT LCB
 	declaration
 	entries
-	RCB
+	RCB EOF
 ;
 entries  :
 	( entry )+
@@ -39,7 +39,7 @@ match_action  :
 ;
 
 action_statements  :
-	( action_flow | action_state )+
+	( action_flow | action_state )?
 ;
 
 match_flow	:
