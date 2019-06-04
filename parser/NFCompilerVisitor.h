@@ -11,7 +11,7 @@
 #include "antlr4-runtime.h"
 #include "NFCompilerParser.h"
 #include "../symboltable.h"
-
+#include "../entry.h"
 
 
 /**
@@ -21,6 +21,8 @@
 class  NFCompilerVisitor : public antlr4::tree::AbstractParseTreeVisitor {
 public:
   SymbolTable ST;
+  map<struct match_flow*, struct action_flow*> entry_flow; 
+  void print_entry_flow();
 
   /**
    * Visit parse trees produced by NFCompilerParser.

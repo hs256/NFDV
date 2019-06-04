@@ -22,6 +22,14 @@
    * Visit parse trees produced by NFCompilerParser.
    */
   
+void NFCompilerVisitor::print_entry_flow() {
+  map<struct match_flow*, struct action_flow*>::iterator it;
+  for (it = NFCompilerVisitor::entry_flow.begin(); it != NFCompilerVisitor::entry_flow.end(); it++) {
+    struct match_flow *mf = it->first;
+    struct action_flow *af = it->second;
+    cout << mf->match << "  " << mf->var << "  " << af->field << "  " << af->action << endl ;
+  }
+}
 
     antlrcpp::Any NFCompilerVisitor::visitProgram(NFCompilerParser::ProgramContext *context) {
       NFCompilerVisitor::ST.add(context->IDENT()->getText(), "program", "program", "NULL", "per-nf");
@@ -50,6 +58,42 @@
   }
 
   antlrcpp::Any NFCompilerVisitor::visitEntry(NFCompilerParser::EntryContext *ctx)  {
+    antlrcpp::Any a_mf = NFCompilerVisitor::visit(ctx->match_action()->match_flow()->condition()->expression());
+    struct match_flow *mf = new match_flow;
+    struct action_flow *af = new action_flow;
+    try {
+      map<bool, string> m;
+      m = a_mf.as<map<bool, string>>();
+      mf->match = m.begin()->first;
+      mf->var = m.begin()->second;
+    } catch (bad_cast const& e) {
+      //cout << "unable to get map match flow " << endl;
+    }
+
+    if (ctx->match_action()->action_statements()->action_flow()) {
+      antlrcpp::Any a_af = NFCompilerVisitor::visit(ctx->match_action()->action_statements()->action_flow()->statement());
+      try {
+	string action = a_af.as<string>();
+	af->field = "";
+	af->action = action;
+      } catch(bad_cast const& e) {
+	  if (ctx->match_action()->action_statements()->action_flow()->statement()->assignment()) {
+	    try {
+	      antlrcpp::Any a_af2 = NFCompilerVisitor::visit(ctx->match_action()->action_statements()->action_flow()->statement()->assignment());
+	      map<string, string> m;
+	      m = a_af2.as<map<string, string>>();
+	      af->field = m.begin()->first;
+	      af->action = m.begin()->second;
+	    } catch (bad_cast const& e) {
+	      //cout << "can't convert to map " << endl;
+	    }
+	  }
+      }
+    } else {
+      af->field = "";
+      af->action = "pass";
+    }
+    NFCompilerVisitor::entry_flow.insert(pair<struct match_flow*, struct action_flow*>(mf, af));  
     return visitChildren(ctx);
   }
 
@@ -106,10 +150,29 @@
   }
 
    antlrcpp::Any NFCompilerVisitor::visitStatement(NFCompilerParser::StatementContext *ctx)  {
-    return visitChildren(ctx);
+     if (ctx->PASS()) {
+       //cout << ctx->PASS()->getText() << " in visit statement " << endl;
+       return antlrcpp::Any(ctx->PASS()->getText());
+    } else
+       return visitChildren(ctx);
   }
 
    antlrcpp::Any NFCompilerVisitor::visitAssignment(NFCompilerParser::AssignmentContext *ctx)  {
+     if (ctx->expression(0) && ctx->expression(1)) { 
+      antlrcpp::Any a1 = NFCompilerVisitor::visit(ctx->expression(0));
+      antlrcpp::Any a2 = NFCompilerVisitor::visit(ctx->expression(1));
+      string s1, s2;
+      map<string, string> m;
+      try {
+	s1 = a1.as<string>();
+	s2 = a2.as<string>();
+	m.insert(pair<string, string>(s1, s2));
+	antlrcpp::Any t(m);
+	return t;
+      } catch (bad_cast const& e) {
+	  //cout << "can't convert any to map in assignment" << endl;
+      }
+    }
     return visitChildren(ctx);
   }
 
@@ -118,22 +181,56 @@
   }
 
    antlrcpp::Any NFCompilerVisitor::visitDouble(NFCompilerParser::DoubleContext *ctx)  {
+     if (ctx->op()->getText() == "matches" || ctx->op()->getText() == "mismatches") {
+       string m = ctx->op()->getText();
+       //struct match_flow *mf = new match_flow;
+       map<bool, string> mf;
+       bool match;
+       if(m == "matches")
+	 match = true;
+       else if (m == "mismatches")
+	 match = false;
+       antlrcpp::Any a = NFCompilerVisitor::visit(ctx->expression(1));
+	try {
+	string c;
+	c = a.as<string>();
+	//mf->var = c;
+	mf.insert(pair<bool, string>(match, c));
+	antlrcpp::Any temp(mf);
+	return temp;
+	} catch (bad_cast const& e) {
+	}
+    }
     return visitChildren(ctx);
   }
 
    antlrcpp::Any NFCompilerVisitor::visitAtom(NFCompilerParser::AtomContext *ctx)  {
       antlrcpp::Any a = visitChildren(ctx);
 	try {
-	map<string, string> m;
-	m = a.as<map<string, string>>();
-	//cout << m.begin()->first << " " << m.begin()->second << endl;
+	string c;
+	c = a.as<string>();
+	//cout << c << " in visit atom" << endl;
+	//NFCompilerVisitor::ST.add(context->IDENT()->getText(),type, type, m.begin()->second, m.begin()->first);
 	} catch (bad_cast const& e) {
 	}
     return a;
   }
 
    antlrcpp::Any NFCompilerVisitor::visitId(NFCompilerParser::IdContext *ctx)  {
-    return visitChildren(ctx);
+    string c = ctx->IDENT()->getText();
+    if (ctx->expression().empty() && ctx->fields() == NULL) {
+      //cout << "returning c in visit ID" << endl;
+      return antlrcpp::Any(c);
+    } else if (ctx->expression().empty() && ctx->fields() != NULL) {
+	antlrcpp::Any a1 = NFCompilerVisitor::visit(ctx->fields());
+	try {
+	  string s1 = a1.as<string>();
+	  //cout << s1  << " in visit id" << endl;
+	  return antlrcpp::Any(s1);
+	} catch (bad_cast const& e) {
+	}
+      }
+      return visitChildren(ctx);
   }
 
    antlrcpp::Any NFCompilerVisitor::visitFunc(NFCompilerParser::FuncContext *ctx)  {
@@ -145,7 +242,9 @@
   }
 
    antlrcpp::Any NFCompilerVisitor::visitConst(NFCompilerParser::ConstContext *ctx)  {
-    return visitChildren(ctx);
+    string c = ctx->constant()->getText();
+    //cout << c << " in const visitor" << endl;
+    return antlrcpp::Any(c);
   }
 
    antlrcpp::Any NFCompilerVisitor::visitSet(NFCompilerParser::SetContext *ctx)  {
@@ -161,10 +260,19 @@
   }
 
    antlrcpp::Any NFCompilerVisitor::visitAction(NFCompilerParser::ActionContext *ctx)  {
-    return visitChildren(ctx);
+    string c = ctx->ACTION()->getText();
+     //cout << c << " in action visitor" << endl;
+    return antlrcpp::Any(c);
   }
 
    antlrcpp::Any NFCompilerVisitor::visitField(NFCompilerParser::FieldContext *ctx)  {
+     antlrcpp::Any a = visitChildren(ctx);
+    try {
+      string action = a.as<string>();
+      //cout << action << " in visit field" << endl;
+    } catch(bad_cast const& e) {
+      //cout << "not pass string in visit field" << endl;
+    }
     return visitChildren(ctx);
   }
 
@@ -226,7 +334,9 @@
   }
 
    antlrcpp::Any NFCompilerVisitor::visitFields(NFCompilerParser::FieldsContext *ctx)  {
-    return visitChildren(ctx);
+    string c = ctx->FIELD()->getText();
+     //cout << c << " in field visitor " << endl;
+    return antlrcpp::Any(c);;
   }
 
 
