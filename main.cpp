@@ -6,9 +6,9 @@
 #include "parser/NFCompilerParser.h"
 #include "parser/NFCompilerVisitor.h"
 #include "symboltable.h"
-//#include "instructions.h"
-//#include "trace.h"
-//#include "pkt.h"
+#include "instructions.h"
+#include "trace.h"
+#include "pkt.h"
 
 using namespace std;
 
@@ -27,6 +27,7 @@ int main(int argc, const char *argv) {
   NFCompilerVisitor visitor;
   antlrcpp::Any v = visitor.visitProgram(nf_name);
   visitor.ST.printST();
+  visitor.print_entry_flow();
 
   //trace t;
 
