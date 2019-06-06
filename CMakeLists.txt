@@ -1,20 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 SET (CMAKE_CXX_STANDARD 14)
-#add_executable(nfdv antlr.cpp)
-
-#include(ExternalAntlr4Cpp)
-#set(ANTLR4CPP_JAR_LOCATION ${PROJECT_SOURCE_DIR}/antlr/antlr-4.7.2-complete.jar)
-#include_directories( ${ANTLR4CPP_INCLUDE_DIRS} )
-#link_directories( ${ANTLR4CPP_LIBS} )
-#message(STATUS "Found antlr4cpp libs: ${ANTLR4CPP_LIBS} and includes: ${ANTLR4CPP_INCLUDE_DIRS} ")
-
-#antlr4cpp_process_grammar(demo NFCompiler
-#  ${PROJECT_SOURCE_DIR}/parser/NFCompiler.g4
-#  include_directories(${antlr4cpp_include_dirs_NFCompiler})
-  
-#add_executable(nfdv antlr.cpp ${antlr4cpp_src_files_NFCompiler})
-#add_dependencies(nfdv antlr4cpp antlr4cpp_generation_NFCompiler)
-#target_link_libraries(nfdv antlr4-runtime)
+PROJECT(NFDV)
 
 set(antlr4-GENERATED_SRC
   ${PROJECT_SOURCE_DIR}/parser/NFCompilerLexer.cpp
@@ -41,6 +27,8 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/libs/
 )
+
+set(Z3_LINK_LIB -lz3)
 
 set(antlr4_SRC
   ${PROJECT_SOURCE_DIR}/main.cpp
@@ -76,7 +64,7 @@ elseif(UNIX)
   target_link_libraries(a.out "${PROJECT_SOURCE_DIR}/libantlr4-runtime.so")
 endif()
 
-target_link_libraries(a.out ${SYSTEM_LIBS})
+target_link_libraries(a.out ${Z3_LINK_LIB})
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 add_custom_command(TARGET a.out POST_BUILD
