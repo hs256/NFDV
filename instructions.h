@@ -1,7 +1,7 @@
 #ifndef INSTRUCTIONS_H
 #define INSTRUCTIONS_H
 
-#include "z3++.h"
+#include <z3++.h>
 
 using namespace z3;
 using namespace std;
@@ -10,6 +10,7 @@ struct allocate_in {
   int id;
   string var;
   int size;
+  //int expr_id;
   //expr e;
 };
 

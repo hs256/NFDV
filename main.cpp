@@ -29,7 +29,22 @@ int main(int argc, const char *argv) {
   visitor.ST.printST();
   visitor.print_entry_flow();
 
-  //trace t;
+  trace t;
+  map<struct match_flow*, struct action_flow*>::iterator it;
+  for (it = visitor.entry_flow.begin(); it != visitor.entry_flow.end(); it++) {
+    struct match_flow *mf = it->first;
+    struct action_flow *af = it->second;
+    string v = mf->var;
+    string g = visitor.ST.getGranularitybyName(v);
+    string c = visitor.ST.getValuebyName(v);
+    int val = stoi(c);
+    t.add_assign_in(pkt_fields[g], val);
+    if(af->action == "DROP") {
+      cout << "DROP Packet" << endl;
+      break;
+    }
+  }
+  t.execute();
 
   return 0;
 }
