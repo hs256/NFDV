@@ -7,6 +7,71 @@
 using namespace std;
 using namespace z3;
 
+vector<struct tracenode*> leaf_nodes(struct tracenode *node) {
+  vector<struct tracenode*> leaves;
+  if (node == NULL)
+    return leaves;
+  if (node->left == NULL && node->right == NULL) {
+    leaves.push_back(node);
+    return leaves;
+  }
+  return leaf_nodes(node->left);
+  return leaf_nodes(node->right);
+}
+
+
+struct tracenode* trace::add_node(expr e, bool decl) {
+  struct tracenode *temp = new tracenode;
+  temp->Expr = e;
+  temp->decl = decl;
+  vector<struct tracenode*> leaves = leaf_nodes(root);
+  vector<struct tracenode*>::iterator it;
+  for (it = leaves.begin(); it != leaves.end(); it++) {
+    (*it)->left = temp;
+  }
+  return temp;
+}
+
+expr trace::get_expr(string a, string op, int value) {
+  vector<expr>::iterator it;
+  expr eq2;
+  for (it = trace::decl_Exprs.begin(); it != trace::decl_Exprs.end(); it++) {
+    if ((*it).decl().name().str() == a) {
+      if (op == ">=") {
+	eq2 = (*it) >=  value;
+      } else if (op == ">") {
+	eq2 = (*it) > value;
+      } else if (op == "<") {
+	eq2 = (*it) < value;
+      } else if (op == "<=") {
+	eq2 = (*it) <= value;
+      } else if (op == "==") {
+	eq2 = (*it) == value;
+      }
+      return eq2;
+    }
+  }
+}
+
+struct tracenode* trace::add_ite_node(expr e1, expr e2, expr e3) {
+  struct tracenode *temp1 = new tracenode;
+  struct tracenode *temp2 = new tracenode;
+  struct tracenode *temp3 = new tracenode;
+  temp1->expr = e1;
+  temp1->decl = false;
+  temp2->expr = e2;
+  temp2->decl = false;
+  temp3->expr = e3;
+  temp3->decl = false;
+  vector<struct tracenode*> leaves = leaf_nodes(root);
+  vector<struct tracenode*>::iterator it;
+  for (it = leaves.begin(); it != leaves.end(); it++) {
+    (*it)->left = temp1;
+    (*it)->right = temp2;
+    (*it)->left->left = temp3;
+  }
+  return temp;
+}
 void trace::add_allocate_in(string a, int size) {
   struct allocate_in *t = new allocate_in;
   t->id = trace::allocate_ins.size() + 1;
@@ -19,7 +84,8 @@ void trace::add_allocate_in(string a, int size) {
   Z3_symbol s = Z3_mk_string_symbol(ctx, const_cast<char *>(name));
   Z3_ast x = Z3_mk_const(ctx, s, int_sort);
   expr eq(ctx, x);
-  trace::decl_Exprs.push_back(eq);
+  //trace::decl_Exprs.push_back(eq);
+  trace::add_node(eq, true);
   cout << "ID: " << t->id << ", allocate(" << a << ", " << size << ")" << endl;
 }
 
@@ -61,7 +127,8 @@ void trace::add_assign_in(string a, int value) {
     for (it = trace::decl_Exprs.begin(); it != trace::decl_Exprs.end(); it++) {
       if ((*it).decl().name().str() == a) {
 	expr eq2 = (*it) ==  value;
-	trace::Exprs.push_back(eq2);
+	//trace::Exprs.push_back(eq2);
+	trace::add_node(eq2, false);
       }
     }
     cout << "ID: " << t->id << ", assign(" << a << ", " << value << ")" << endl;
@@ -80,19 +147,24 @@ void trace::add_assert_in(string a, string op, int value) {
     if ((*it).decl().name().str() == a) {
       if (op == ">=") {
 	expr eq2 = (*it) >=  value;
-	trace::Exprs.push_back(eq2);
+	//trace::Exprs.push_back(eq2);
+	trace::add_node(eq2, false);
       } else if (op == ">") {
 	expr eq2 = (*it) > value;
-	trace::Exprs.push_back(eq2);
+	//trace::Exprs.push_back(eq2);
+	trace::add_node(eq2, false);
       } else if (op == "<") {
 	expr eq2 = (*it) < value;
-	trace::Exprs.push_back(eq2);
+	//trace::Exprs.push_back(eq2);
+	trace::add_node(eq2, false);
       } else if (op == "<=") {
 	expr eq2 = (*it) <= value;
-	trace::Exprs.push_back(eq2);
+	//trace::Exprs.push_back(eq2);
+	trace::add_node(eq2, false);
       } else if (op == "==") {
 	expr eq2 = (*it) == value;
-	trace::Exprs.push_back(eq2);
+	//trace::Exprs.push_back(eq2);
+	trace::add_node(eq2, false);
       }
     }
   }
