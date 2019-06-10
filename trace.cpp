@@ -1,9 +1,11 @@
 #include <vector>
-#include <z3.h>
+#include <z3++.h>
 
 #include "trace.h"
 #include "instructions.h"
 
+using namespace std;
+using namespace z3;
 
 void trace::add_allocate_in(string a, int size) {
   struct allocate_in *t = new allocate_in;
@@ -11,6 +13,14 @@ void trace::add_allocate_in(string a, int size) {
   t->var = a;
   t->size = size;
   trace::allocate_ins.push_back(t);
+  string unique_name = a + to_string(t->id);
+  const char *name = unique_name.c_str();
+  Z3_sort int_sort = Z3_mk_int_sort(ctx);
+  Z3_symbol s = Z3_mk_string_symbol(ctx, const_cast<char *>(name));
+  Z3_ast x = Z3_mk_const(ctx, s, int_sort);
+  expr eq(ctx, x);
+  trace::decl_Exprs.push_back(eq);
+  cout << "ID: " << t->id << ", allocate(" << a << ", " << size << ")" << endl;
 }
 
 bool trace::is_allocated(string a) {
@@ -23,15 +33,15 @@ bool trace::is_allocated(string a) {
   return false;
 }
 
-/*expr trace::allocated_expr(string a) {
+struct allocate_in* trace::allocated_sym(string a) {
   vector<struct allocate_in*>::iterator it;
   for (it = trace::allocate_ins.begin(); it != trace::allocate_ins.end(); it++) {
     if ((*it)->var == a)
-      return (*it)->expr;
+      return (*it);
   }
 
   return NULL;
-}*/
+}
 
 
 void trace::add_assign_in(string a, int value) {
@@ -45,6 +55,16 @@ void trace::add_assign_in(string a, int value) {
     t->var = a;
     t->value = value;
     trace::assign_ins.push_back(t);
+    //struct allocate_in *ain = allocated_sym(a);
+    //int eid = ain->expr_id;
+    vector<expr>::iterator it;
+    for (it = trace::decl_Exprs.begin(); it != trace::decl_Exprs.end(); it++) {
+      if ((*it).decl().name().str() == a) {
+	expr eq2 = (*it) ==  value;
+	trace::Exprs.push_back(eq2);
+      }
+    }
+    cout << "ID: " << t->id << ", assign(" << a << ", " << value << ")" << endl;
   }
 }
 
@@ -55,6 +75,28 @@ void trace::add_assert_in(string a, string op, int value) {
   t->op = op;
   t->d = value;
   trace::assert_ins.push_back(t);
+  vector<expr>::iterator it;
+  for (it = trace::decl_Exprs.begin(); it != trace::decl_Exprs.end(); it++) {
+    if ((*it).decl().name().str() == a) {
+      if (op == ">=") {
+	expr eq2 = (*it) >=  value;
+	trace::Exprs.push_back(eq2);
+      } else if (op == ">") {
+	expr eq2 = (*it) > value;
+	trace::Exprs.push_back(eq2);
+      } else if (op == "<") {
+	expr eq2 = (*it) < value;
+	trace::Exprs.push_back(eq2);
+      } else if (op == "<=") {
+	expr eq2 = (*it) <= value;
+	trace::Exprs.push_back(eq2);
+      } else if (op == "==") {
+	expr eq2 = (*it) == value;
+	trace::Exprs.push_back(eq2);
+      }
+    }
+  }
+  cout << "ID: " << t->id << ", assert(" << a << " " << op << " " << value << ")" << endl;
 }
 
 trace::trace() {
@@ -98,19 +140,37 @@ trace::trace() {
   trace::add_allocate_in("L4+109", 1);
   trace::add_assign_in("L4+109", 0);
   trace::add_allocate_in("L4+110", 1);
+  trace::add_allocate_in("L4+111", 1);
 
 }
 
 int trace::execute() {
+  solver s(ctx);
+  vector<expr>::iterator it;
+  for (it = trace::Exprs.begin(); it != trace::Exprs.end(); it++) {
+    s.add((*it));
+  }
+  cout << s.check() << endl;
+  model m = s.get_model();
+  cout << "Model:\n" << m << "\n";
+}
 
   /*vector<struct allocate_in*>::iterator it_alloc;
   for (it_alloc = allocate_ins.begin(); it_alloc != allocate_ins.end(); it_alloc++) {
-    (*it_alloc)->e = c.int_const((*it_alloc)->a);
+    string unique_name = (*it_alloc)->var + to_string((*it_alloc)->id);
+    const char *name = unique_name.c_str();
+    Z3_sort int_sort = Z3_mk_int_sort(ctx);
+    Z3_symbol s = Z3_mk_string_symbol(ctx, const_cast<char *>(name));
+    Z3_ast x = Z3_mk_const(ctx, s, int_sort);
+
+
   }
 
   vector<struct assign_in*>::iterator it_assign;
   for (it_assign = assign_ins.begin(); it_assign != assign_ins.end(); it_assign++) {
-    //s.add(trace::allocated_expr(it_assign->a) == it_assign->value);
+    string var_name = (*it_assign)->var;
+    struct allocate_in *s = trace::allocated_sym(var_name);
+    string unique_name = var_name + to_string(s->id);
   }
 
   vector<struct assert_in*>::iterator it_assert;
@@ -119,11 +179,12 @@ int trace::execute() {
   }
 
   std::cout << s << std::endl;
-  std::cout << s.check() << std::endl;
+  std::cout << s->check() << std::endl;
 
-  if (s.check() == "unsat")
+  if (s->check() == "unsat")
     return -1;
   else
-    return 0;*/
-}
+    return 0;
+  return 0;
+}*/
 

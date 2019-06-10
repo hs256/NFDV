@@ -1,8 +1,8 @@
-#include "z3++.h"
+#include <z3++.h>
 #include <vector>
 
-#include "pkt.h"
-#include "instructions.h"
+//#include "pkt.h"
+//#include "instructions.h"
 
 using namespace z3;
 using namespace std;
@@ -12,12 +12,15 @@ using namespace std;
 #define TRACE_H
 
 class trace {
-  context c;
+  context ctx;
   //solver s;
   struct packet *pkt;
   vector<struct allocate_in*> allocate_ins;
   vector<struct assign_in*> assign_ins;
   vector<struct assert_in*> assert_ins;
+  //vector<Z3_ast> ASTs;
+  vector<expr> decl_Exprs;
+  vector<expr> Exprs;
 
   public:
 
@@ -28,7 +31,8 @@ class trace {
   void add_assert_in(string a, string op, int d);
   int execute();
   bool is_allocated(string a);
-  expr allocated_expr(string a);
+  struct allocate_in *allocated_sym(string a);
+  void print_trace();
 };
 
 #endif
