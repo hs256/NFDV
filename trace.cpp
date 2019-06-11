@@ -8,7 +8,6 @@ using namespace std;
 using namespace z3;
 
 vector<struct tracenode*> trace::leaf_nodes(struct tracenode *node, vector<struct tracenode*> leaves) {
-  //vector<struct tracenode*> leaves;
   //cout << "in leaf nodes size of leaves " << leaves.size() << endl;
   if (node == NULL) {
     //cout << "empty root node " << endl;
@@ -17,18 +16,60 @@ vector<struct tracenode*> trace::leaf_nodes(struct tracenode *node, vector<struc
   if (node->left == NULL && node->right == NULL) {
     //cout << "adding leaf node to list" << endl;
     leaves.push_back(node);
-    //return leaves;
   }
-    /*leaves.insert(leaves.end(), leaf_nodes(node->left).begin(), leaf_nodes(node->left).end());
-    leaves.insert(leaves.end(), leaf_nodes(node->right).begin(), leaf_nodes(node->right).end());*/
   if (node->left != NULL) 
     leaves =  leaf_nodes(node->left, leaves);
   if (node->right != NULL) {
-    //cout << "right leaf node " << endl;
     leaves = leaf_nodes(node->right, leaves);
   }
   return leaves;
 }
+
+vector<vector<struct tracenode*>> trace::get_paths(struct tracenode *node, vector<vector<struct tracenode*>> paths, vector<struct tracenode *> path) {
+  //vector<struct tracenode* > path;
+  cout << "in get paths " << endl;
+  if (node == NULL) {
+    return paths;
+  }
+
+  cout << "adding node in path " << endl;
+  path.push_back(node);
+  if (node->left == NULL && node->right == NULL) {
+    cout << "path length in get_path " << path.size() << endl;
+    paths.push_back(path);
+    path.clear();
+  }
+  if (node->left != NULL)
+    paths = get_paths(node->left, paths, path);
+  if (node->right != NULL)
+    paths = get_paths(node->right, paths, path);
+  cout << "no of paths in  get_paths " << paths.size() << endl;
+  return paths;
+}
+
+void trace::print_all_paths() {
+  vector<vector <struct tracenode* >> paths;
+  vector<struct tracenode *> path;
+  paths = trace::get_paths(root, paths, path);
+  vector<vector<struct tracenode* >> ::iterator it;
+  int i = 1;
+  for (it = paths.begin(); it != paths.end(); it++) {
+    cout << "Trace " << i++ << " : " << endl;
+    vector <struct tracenode *> path = (*it);
+    cout << "path len " << path.size() << endl;
+    vector <struct tracenode *>::iterator it2;
+    for (it2 = path.begin(); it2 != path.end(); it2++) {
+      if ((*it2)->decl) {
+	cout << "Allocate(" << (*it2)->a << ")" << endl;
+      } else if ((*it2)->op == "==") {
+	cout << "Assign(" << (*it2)->a << ", " << (*it2)->value << ")" << endl;
+      } else {
+	cout << "Assert(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
+      }
+    }
+  }
+}
+    
 
 
 struct tracenode* trace::add_decl_node(string s) {
@@ -226,12 +267,12 @@ void trace::add_assert_in(string a, string op, int value) {
 }
 
 trace::trace() {
-  /*cout << "creating symbolic packet" << endl;
+  cout << "creating symbolic packet" << endl;
   trace::add_allocate_in("L3+0", 4);
   trace::add_allocate_in("L3+72", 8);
-  */trace::add_allocate_in("L3+96", 32);
+  trace::add_allocate_in("L3+96", 32);
   trace::add_assert_in("L3+96", ">=", 0);
-  trace::add_assert_in("L3+96", "<=", 4294967296);
+  trace::add_assert_in("L3+96", "<=", 429496);
   /*trace::add_allocate_in("L3+128", 32);
   trace::add_assert_in("L3+128", ">=", 0);
   trace::add_assert_in("L3+128", "<=", 4294967296);
