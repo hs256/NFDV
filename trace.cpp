@@ -26,13 +26,10 @@ vector<struct tracenode*> trace::leaf_nodes(struct tracenode *node, vector<struc
 }
 
 vector<vector<struct tracenode*>> trace::get_paths(struct tracenode *node, vector<vector<struct tracenode*>> paths, vector<struct tracenode *> path) {
-  //vector<struct tracenode* > path;
-  //cout << "in get paths " << endl;
   if (node == NULL) {
     return paths;
   }
 
-  //cout << "adding node in path " << endl;
   path.push_back(node);
   if (node->left == NULL && node->right == NULL) {
     //cout << "path length in get_path " << path.size() << endl;
@@ -73,7 +70,6 @@ void trace::print_all_paths() {
 
 
 struct tracenode* trace::add_decl_node(string s) {
-  //cout << "in add decl node" << endl;
   struct tracenode *temp = new tracenode;
   temp->a = s;
   temp->decl = true;
@@ -113,17 +109,6 @@ struct tracenode* trace::add_assert_node(string s1, string op, int value) {
 }
 
 void trace::add_ite_node(struct tracenode *t1, struct tracenode *t2, struct tracenode *t3) {
-  /*struct tracenode *temp1 = new tracenode;
-  struct tracenode *temp2 = new tracenode;
-  struct tracenode *temp3 = new tracenode;
-  temp1->expr = e1;
-  temp1->decl = false;
-  temp2->expr = e2;
-  temp2->decl = false;
-  temp3->expr = e3;
-  temp3->decl = false;*/
-  //cout << "in add ite node " << endl;
-  //cout << "ite node condition I " << t1->a << " " << t1->op << " " << t1->value << endl;
   vector<struct tracenode*> leaves;
   leaves = trace::leaf_nodes(root, leaves);
   //cout << "leaf nodes in ite " << leaves.size() << endl;
@@ -145,40 +130,7 @@ struct tracenode* trace::new_assert_node(string a, string op, int v) {
   return temp;
 }
 
-/*expr trace::get_expr(string a, string op, int value) {
-  vector<expr>::iterator it;
-  expr eq2;
-  for (it = trace::decl_Exprs.begin(); it != trace::decl_Exprs.end(); it++) {
-    if ((*it).decl().name().str() == a) {
-      if (op == ">=") {
-	eq2 = (*it) >=  value;
-      } else if (op == ">") {
-	eq2 = (*it) > value;
-      } else if (op == "<") {
-	eq2 = (*it) < value;
-      } else if (op == "<=") {
-	eq2 = (*it) <= value;
-      } else if (op == "==") {
-	eq2 = (*it) == value;
-      }
-      return eq2;
-    }
-  }
-}*/
-
 void trace::add_allocate_in(string a, int size) {
-  /*struct allocate_in *t = new allocate_in;
-  t->id = trace::allocate_ins.size() + 1;
-  t->var = a;
-  t->size = size;
-  trace::allocate_ins.push_back(t);
-  string unique_name = a + to_string(t->id);
-  const char *name = unique_name.c_str();
-  Z3_sort int_sort = Z3_mk_int_sort(ctx);
-  Z3_symbol s = Z3_mk_string_symbol(ctx, const_cast<char *>(name));
-  Z3_ast x = Z3_mk_const(ctx, s, int_sort);
-  expr eq(ctx, x);
-  //trace::decl_Exprs.push_back(eq);*/
   trace::add_decl_node(a);
   //cout << "ID: " << t->id << ", allocate(" << a << ", " << size << ")" << endl;
 }
@@ -206,64 +158,11 @@ struct allocate_in* trace::allocated_sym(string a) {
 
 void trace::add_assign_in(string a, int value) {
   
-  /*if (!trace::is_allocated(a)) {
-    cout << "allocate the symbol first" << endl;
-    return;
-  } else {
-    struct assign_in *t = new assign_in;
-    t->id = assign_ins.size() + 1;
-    t->var = a;
-    t->value = value;
-    trace::assign_ins.push_back(t);
-    //struct allocate_in *ain = allocated_sym(a);
-    //int eid = ain->expr_id;
-    vector<expr>::iterator it;
-    for (it = trace::decl_Exprs.begin(); it != trace::decl_Exprs.end(); it++) {
-      if ((*it).decl().name().str() == a) {
-	expr eq2 = (*it) ==  value;
-	//trace::Exprs.push_back(eq2);
-	trace::add_node(eq2, false);
-      }
-    }
-    cout << "ID: " << t->id << ", assign(" << a << ", " << value << ")" << endl;
-  }*/
+  //cout << "ID: " << t->id << ", assign(" << a << ", " << value << ")" << endl;
   add_assert_node(a, "==", value);
 }
 
 void trace::add_assert_in(string a, string op, int value) {
-  /*struct assert_in *t = new assert_in;
-  t->id = assert_ins.size() + 1;
-  t->var = a;
-  t->op = op;
-  t->d = value;
-  trace::assert_ins.push_back(t);
-  vector<expr>::iterator it;
-  for (it = trace::decl_Exprs.begin(); it != trace::decl_Exprs.end(); it++) {
-    if ((*it).decl().name().str() == a) {
-      if (op == ">=") {
-	expr eq2 = (*it) >=  value;
-	//trace::Exprs.push_back(eq2);
-	trace::add_node(eq2, false);
-      } else if (op == ">") {
-	expr eq2 = (*it) > value;
-	//trace::Exprs.push_back(eq2);
-	trace::add_node(eq2, false);
-      } else if (op == "<") {
-	expr eq2 = (*it) < value;
-	//trace::Exprs.push_back(eq2);
-	trace::add_node(eq2, false);
-      } else if (op == "<=") {
-	expr eq2 = (*it) <= value;
-	//trace::Exprs.push_back(eq2);
-	trace::add_node(eq2, false);
-      } else if (op == "==") {
-	expr eq2 = (*it) == value;
-	//trace::Exprs.push_back(eq2);
-	trace::add_node(eq2, false);
-      }
-    }
-  }
-  cout << "ID: " << t->id << ", assert(" << a << " " << op << " " << value << ")" << endl;*/
   add_assert_node(a, op, value);
 }
 
@@ -274,7 +173,7 @@ trace::trace() {
   trace::add_allocate_in("L3+96", 32);
   trace::add_assert_in("L3+96", ">=", 0);
   trace::add_assert_in("L3+96", "<=", 429496);
-  /*trace::add_allocate_in("L3+128", 32);
+  trace::add_allocate_in("L3+128", 32);
   trace::add_assert_in("L3+128", ">=", 0);
   trace::add_assert_in("L3+128", "<=", 4294967296);
   trace::add_allocate_in("L3+64", 8);
@@ -282,10 +181,10 @@ trace::trace() {
   trace::add_allocate_in("L3+16", 16);
   trace::add_allocate_in("L3+4", 4);
   trace::add_allocate_in("L3+80", 16);
-  trace::add_allocate_in("L3+32", 16);*/
+  trace::add_allocate_in("L3+32", 16);
   trace::add_allocate_in("L4+0", 16);
   trace::add_assert_in("L4+0", ">=", 0);
-  trace::add_assert_in("L4+0", "<=", 65536);/*
+  trace::add_assert_in("L4+0", "<=", 65536);
   trace::add_allocate_in("L4+16", 16);
   trace::add_assert_in("L4+16", ">=", 0);
   trace::add_assert_in("L4+16", "<=", 65536);
@@ -309,7 +208,7 @@ trace::trace() {
   trace::add_allocate_in("L4+109", 1);
   trace::add_assign_in("L4+109", 0);
   trace::add_allocate_in("L4+110", 1);
-  trace::add_allocate_in("L4+111", 1);*/
+  trace::add_allocate_in("L4+111", 1);
 
 }
 
@@ -364,38 +263,4 @@ int trace::execute() {
     cout << s.check() << endl;
   }
 }
-
-
-  /*vector<struct allocate_in*>::iterator it_alloc;
-  for (it_alloc = allocate_ins.begin(); it_alloc != allocate_ins.end(); it_alloc++) {
-    string unique_name = (*it_alloc)->var + to_string((*it_alloc)->id);
-    const char *name = unique_name.c_str();
-    Z3_sort int_sort = Z3_mk_int_sort(ctx);
-    Z3_symbol s = Z3_mk_string_symbol(ctx, const_cast<char *>(name));
-    Z3_ast x = Z3_mk_const(ctx, s, int_sort);
-
-
-  }
-
-  vector<struct assign_in*>::iterator it_assign;
-  for (it_assign = assign_ins.begin(); it_assign != assign_ins.end(); it_assign++) {
-    string var_name = (*it_assign)->var;
-    struct allocate_in *s = trace::allocated_sym(var_name);
-    string unique_name = var_name + to_string(s->id);
-  }
-
-  vector<struct assert_in*>::iterator it_assert;
-  for (it_assert = assert_ins.begin(); it_assert != assert_ins.end(); it_assert++) {
-    //s.add(trace::allocated_expr(it_assert->a) it_assert->op it_assert->d);
-  }
-
-  std::cout << s << std::endl;
-  std::cout << s->check() << std::endl;
-
-  if (s->check() == "unsat")
-    return -1;
-  else
-    return 0;
-  return 0;
-}*/
 
