@@ -1,5 +1,6 @@
 program IDS{
-rule ALLOW = sip:192.168.22.0/24;
+rule ALLOW = sip:192.168.22.1;
+rule C1 = sport:666;
 entry {
  match_flow { f matches ALLOW }
  action_flow {pass;}
@@ -7,5 +8,9 @@ entry {
 entry {
  match_flow { f mismatches ALLOW }
  action_flow { f[dip]= DROP; }
+}
+entry {
+  match_flow { f matches C1 }
+  action_flow {pass;}
 }
 }
