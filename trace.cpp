@@ -7,24 +7,63 @@
 using namespace std;
 using namespace z3;
 
-vector<struct tracenode*> leaf_nodes(struct tracenode *node) {
-  vector<struct tracenode*> leaves;
-  if (node == NULL)
-    return leaves;
-  if (node->left == NULL && node->right == NULL) {
-    leaves.push_back(node);
+vector<struct tracenode*> trace::leaf_nodes(struct tracenode *node, vector<struct tracenode*> leaves) {
+  //vector<struct tracenode*> leaves;
+  //cout << "in leaf nodes size of leaves " << leaves.size() << endl;
+  if (node == NULL) {
+    //cout << "empty root node " << endl;
     return leaves;
   }
-  return leaf_nodes(node->left);
-  return leaf_nodes(node->right);
+  if (node->left == NULL && node->right == NULL) {
+    //cout << "adding leaf node to list" << endl;
+    leaves.push_back(node);
+    //return leaves;
+  }
+    /*leaves.insert(leaves.end(), leaf_nodes(node->left).begin(), leaf_nodes(node->left).end());
+    leaves.insert(leaves.end(), leaf_nodes(node->right).begin(), leaf_nodes(node->right).end());*/
+  if (node->left != NULL) 
+    leaves =  leaf_nodes(node->left, leaves);
+  if (node->right != NULL) {
+    //cout << "right leaf node " << endl;
+    leaves = leaf_nodes(node->right, leaves);
+  }
+  return leaves;
 }
 
 
-struct tracenode* trace::add_node(expr e, bool decl) {
+struct tracenode* trace::add_decl_node(string s) {
+  //cout << "in add decl node" << endl;
   struct tracenode *temp = new tracenode;
-  temp->Expr = e;
-  temp->decl = decl;
-  vector<struct tracenode*> leaves = leaf_nodes(root);
+  temp->a = s;
+  temp->decl = true;
+  temp->left = temp->right = NULL;
+  vector<struct tracenode*> leaves;
+  leaves = leaf_nodes(root, leaves);
+  if (leaves.size() == 0) {
+    //cout << "no leaf nodes in add decl node " << endl;
+    root = temp;
+    root->left = NULL;
+    root->right = NULL;
+  } else {
+    //cout << "leaf nodes in add decl node " << leaves.size() << endl;
+    vector<struct tracenode*>::iterator it;
+    for (it = leaves.begin(); it != leaves.end(); it++) {
+      (*it)->left = temp;
+    }
+  }
+  return temp;
+}
+
+struct tracenode* trace::add_assert_node(string s1, string op, int value) {
+  //cout << "in assert node" << endl;
+  struct tracenode *temp = new tracenode;
+  temp->a = s1;
+  temp->decl = false;
+  temp->op = op;
+  temp->value = value;
+  temp->left = temp->right = NULL;
+  vector<struct tracenode*> leaves;
+  leaves = trace::leaf_nodes(root, leaves);
   vector<struct tracenode*>::iterator it;
   for (it = leaves.begin(); it != leaves.end(); it++) {
     (*it)->left = temp;
@@ -32,7 +71,39 @@ struct tracenode* trace::add_node(expr e, bool decl) {
   return temp;
 }
 
-expr trace::get_expr(string a, string op, int value) {
+void trace::add_ite_node(struct tracenode *t1, struct tracenode *t2, struct tracenode *t3) {
+  /*struct tracenode *temp1 = new tracenode;
+  struct tracenode *temp2 = new tracenode;
+  struct tracenode *temp3 = new tracenode;
+  temp1->expr = e1;
+  temp1->decl = false;
+  temp2->expr = e2;
+  temp2->decl = false;
+  temp3->expr = e3;
+  temp3->decl = false;*/
+  //cout << "in add ite node " << endl;
+  vector<struct tracenode*> leaves;
+  leaves = trace::leaf_nodes(root, leaves);
+  cout << "leaf nodes in ite " << leaves.size() << endl;
+  vector<struct tracenode*>::iterator it;
+  for (it = leaves.begin(); it != leaves.end(); it++) {
+    (*it)->left = t1;
+    (*it)->right = t2;
+    (*it)->left->left = t3;
+  }
+}
+
+struct tracenode* trace::new_assert_node(string a, string op, int v) {
+  struct tracenode *temp = new tracenode;
+  temp->a = a;
+  temp->op = op;
+  temp->value = v;
+  temp->left = NULL;
+  temp->right = NULL;
+  return temp;
+}
+
+/*expr trace::get_expr(string a, string op, int value) {
   vector<expr>::iterator it;
   expr eq2;
   for (it = trace::decl_Exprs.begin(); it != trace::decl_Exprs.end(); it++) {
@@ -51,29 +122,10 @@ expr trace::get_expr(string a, string op, int value) {
       return eq2;
     }
   }
-}
+}*/
 
-struct tracenode* trace::add_ite_node(expr e1, expr e2, expr e3) {
-  struct tracenode *temp1 = new tracenode;
-  struct tracenode *temp2 = new tracenode;
-  struct tracenode *temp3 = new tracenode;
-  temp1->expr = e1;
-  temp1->decl = false;
-  temp2->expr = e2;
-  temp2->decl = false;
-  temp3->expr = e3;
-  temp3->decl = false;
-  vector<struct tracenode*> leaves = leaf_nodes(root);
-  vector<struct tracenode*>::iterator it;
-  for (it = leaves.begin(); it != leaves.end(); it++) {
-    (*it)->left = temp1;
-    (*it)->right = temp2;
-    (*it)->left->left = temp3;
-  }
-  return temp;
-}
 void trace::add_allocate_in(string a, int size) {
-  struct allocate_in *t = new allocate_in;
+  /*struct allocate_in *t = new allocate_in;
   t->id = trace::allocate_ins.size() + 1;
   t->var = a;
   t->size = size;
@@ -84,12 +136,12 @@ void trace::add_allocate_in(string a, int size) {
   Z3_symbol s = Z3_mk_string_symbol(ctx, const_cast<char *>(name));
   Z3_ast x = Z3_mk_const(ctx, s, int_sort);
   expr eq(ctx, x);
-  //trace::decl_Exprs.push_back(eq);
-  trace::add_node(eq, true);
-  cout << "ID: " << t->id << ", allocate(" << a << ", " << size << ")" << endl;
+  //trace::decl_Exprs.push_back(eq);*/
+  trace::add_decl_node(a);
+  //cout << "ID: " << t->id << ", allocate(" << a << ", " << size << ")" << endl;
 }
 
-bool trace::is_allocated(string a) {
+/*bool trace::is_allocated(string a) {
   vector<struct allocate_in*>::iterator it;
   for (it = trace::allocate_ins.begin(); it != trace::allocate_ins.end(); it++) {
     if ((*it)->var == a)
@@ -107,12 +159,12 @@ struct allocate_in* trace::allocated_sym(string a) {
   }
 
   return NULL;
-}
+}*/
 
 
 void trace::add_assign_in(string a, int value) {
   
-  if (!trace::is_allocated(a)) {
+  /*if (!trace::is_allocated(a)) {
     cout << "allocate the symbol first" << endl;
     return;
   } else {
@@ -132,11 +184,12 @@ void trace::add_assign_in(string a, int value) {
       }
     }
     cout << "ID: " << t->id << ", assign(" << a << ", " << value << ")" << endl;
-  }
+  }*/
+  add_assert_node(a, "==", value);
 }
 
 void trace::add_assert_in(string a, string op, int value) {
-  struct assert_in *t = new assert_in;
+  /*struct assert_in *t = new assert_in;
   t->id = assert_ins.size() + 1;
   t->var = a;
   t->op = op;
@@ -168,16 +221,18 @@ void trace::add_assert_in(string a, string op, int value) {
       }
     }
   }
-  cout << "ID: " << t->id << ", assert(" << a << " " << op << " " << value << ")" << endl;
+  cout << "ID: " << t->id << ", assert(" << a << " " << op << " " << value << ")" << endl;*/
+  add_assert_node(a, op, value);
 }
 
 trace::trace() {
+  /*cout << "creating symbolic packet" << endl;
   trace::add_allocate_in("L3+0", 4);
   trace::add_allocate_in("L3+72", 8);
-  trace::add_allocate_in("L3+96", 32);
+  */trace::add_allocate_in("L3+96", 32);
   trace::add_assert_in("L3+96", ">=", 0);
   trace::add_assert_in("L3+96", "<=", 4294967296);
-  trace::add_allocate_in("L3+128", 32);
+  /*trace::add_allocate_in("L3+128", 32);
   trace::add_assert_in("L3+128", ">=", 0);
   trace::add_assert_in("L3+128", "<=", 4294967296);
   trace::add_allocate_in("L3+64", 8);
@@ -212,11 +267,12 @@ trace::trace() {
   trace::add_allocate_in("L4+109", 1);
   trace::add_assign_in("L4+109", 0);
   trace::add_allocate_in("L4+110", 1);
-  trace::add_allocate_in("L4+111", 1);
+  trace::add_allocate_in("L4+111", 1);*/
 
 }
 
 int trace::execute() {
+  /*
   solver s(ctx);
   vector<expr>::iterator it;
   for (it = trace::Exprs.begin(); it != trace::Exprs.end(); it++) {
@@ -224,7 +280,7 @@ int trace::execute() {
   }
   cout << s.check() << endl;
   model m = s.get_model();
-  cout << "Model:\n" << m << "\n";
+  cout << "Model:\n" << m << "\n";*/
 }
 
   /*vector<struct allocate_in*>::iterator it_alloc;
