@@ -12,6 +12,7 @@ using namespace std;
 #define TRACE_H
 
 struct tracenode {
+  int id;
   //expr Expr;
   string a;
   string op;
@@ -39,11 +40,15 @@ class trace {
   trace();
   struct tracenode *add_node(expr e, bool decl);
   vector<struct tracenode*> leaf_nodes(struct tracenode *node, vector<struct tracenode*> leaves); 
+  void del_node(struct tracenode *node);
+  struct tracenode *parent_node(struct tracenode *tree, struct tracenode *node);
+  bool compare_nodes(struct tracenode *t1, struct tracenode *t2);
   int count_allocate_ins();
   int count_assert_ins();
   struct tracenode *new_assert_node(string a, string op, int v);
-  struct tracenode *add_assert_node(string s1, string op, int v);
-  struct tracenode *add_decl_node(string s);
+  struct tracenode *new_decl_node(string s);
+  void add_assert_node(string s1, string op, int v);
+  void add_decl_node(string s);
   //expr get_expr(string a, string op, int value);
   //void add_sym_pkt(char *name);
   void add_allocate_in(string a, int size);

@@ -61,8 +61,9 @@ int main(int argc, const char *argv) {
     
     t.add_ite_node(t1, t2, t3);
   }
-  t.print_all_paths();
+  //t.print_all_paths();
   t.execute();
+  t.print_all_paths();
 
   return 0;
 }
