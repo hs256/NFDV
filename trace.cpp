@@ -170,7 +170,7 @@ void trace::add_decl_node(string s) {
   return;
 }
 
-void trace::add_assert_node(string s1, string op, int value) {
+void trace::add_assert_node(string s1, string op, long int value) {
   //cout << "in assert node" << endl;
   /*struct tracenode *temp = new tracenode;
   temp->a = s1;
@@ -202,7 +202,7 @@ void trace::add_ite_node(struct tracenode *t1, struct tracenode *t2, struct trac
   }
 }
 
-struct tracenode* trace::new_assert_node(string a, string op, int v) {
+struct tracenode* trace::new_assert_node(string a, string op,long int v) {
   struct tracenode *temp = new tracenode;
   temp->id = assert_ins_count++;
   temp->a = a;
@@ -246,7 +246,7 @@ void trace::add_assign_in(string a, int value) {
   add_assert_node(a, "==", value);
 }
 
-void trace::add_assert_in(string a, string op, int value) {
+void trace::add_assert_in(string a, string op, long int value) {
   add_assert_node(a, op, value);
 }
 
@@ -258,8 +258,8 @@ trace::trace() {
   trace::add_allocate_in("L3+72", 8);
   trace::add_allocate_in("L3+96", 32);
   trace::add_assert_in("L3+96", ">=", 0);
-  trace::add_assert_in("L3+96", "<=", 429496);
-  /*trace::add_allocate_in("L3+128", 32);
+  trace::add_assert_in("L3+96", "<=", 4294967296);
+  trace::add_allocate_in("L3+128", 32);
   trace::add_assert_in("L3+128", ">=", 0);
   trace::add_assert_in("L3+128", "<=", 4294967296);
   trace::add_allocate_in("L3+64", 8);
@@ -267,10 +267,10 @@ trace::trace() {
   trace::add_allocate_in("L3+16", 16);
   trace::add_allocate_in("L3+4", 4);
   trace::add_allocate_in("L3+80", 16);
-  trace::add_allocate_in("L3+32", 16);*/
+  trace::add_allocate_in("L3+32", 16);
   trace::add_allocate_in("L4+0", 16);
   trace::add_assert_in("L4+0", ">=", 0);
-  trace::add_assert_in("L4+0", "<=", 65536);/*
+  trace::add_assert_in("L4+0", "<=", 65536);
   trace::add_allocate_in("L4+16", 16);
   trace::add_assert_in("L4+16", ">=", 0);
   trace::add_assert_in("L4+16", "<=", 65536);
@@ -294,7 +294,7 @@ trace::trace() {
   trace::add_allocate_in("L4+109", 1);
   trace::add_assign_in("L4+109", 0);
   trace::add_allocate_in("L4+110", 1);
-  trace::add_allocate_in("L4+111", 1);*/
+  trace::add_allocate_in("L4+111", 1);
 
 }
 

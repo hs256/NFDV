@@ -16,7 +16,7 @@ struct tracenode {
   //expr Expr;
   string a;
   string op;
-  int value;
+  long int value;
   bool decl;
   struct tracenode *left, *right;
 };
@@ -45,15 +45,15 @@ class trace {
   bool compare_nodes(struct tracenode *t1, struct tracenode *t2);
   int count_allocate_ins();
   int count_assert_ins();
-  struct tracenode *new_assert_node(string a, string op, int v);
+  struct tracenode *new_assert_node(string a, string op, long int v);
   struct tracenode *new_decl_node(string s);
-  void add_assert_node(string s1, string op, int v);
+  void add_assert_node(string s1, string op, long int v);
   void add_decl_node(string s);
   //expr get_expr(string a, string op, int value);
   //void add_sym_pkt(char *name);
   void add_allocate_in(string a, int size);
   void add_assign_in(string a, int value);
-  void add_assert_in(string a, string op, int d);
+  void add_assert_in(string a, string op, long int d);
   void add_ite_node(struct tracenode *t1, struct tracenode *t2, struct tracenode *t3);
   int execute();
   bool is_allocated(string a);

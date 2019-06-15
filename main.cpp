@@ -33,13 +33,16 @@ int main(int argc, const char *argv) {
   map<struct match_flow*, struct action_flow*>::reverse_iterator it;
   for (it = visitor.entry_flow.rbegin(); it != visitor.entry_flow.rend(); it++) {
     //cout << "visitor entries" << endl;
+    int val;
     struct match_flow *mf = it->first;
     struct action_flow *af = it->second;
     string v = mf->var;
     string g = visitor.ST.getGranularitybyName(v);
     string c = visitor.ST.getValuebyName(v);
-    int val = stoi(c);
-    //cout << pkt_fields[g] << " " << val << endl;
+    if (c.find(".") != string::npos) {
+      val = iptoint(c);
+    } else
+      val = stoi(c);
     struct tracenode *t1, *t2, *t3;
     if (mf->match) {
       t1 = t.new_assert_node(pkt_fields[g], "==", val);
