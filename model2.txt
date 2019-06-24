@@ -1,0 +1,62 @@
+program tcp_reassembly {
+  int tcp_state(sip&dip&sport&dport) = TCP_STATE_CLOSED;
+  int TCP_STATE_NONE = 0;
+  int TCP_STATE_LISTEN = 1;
+  int TCP_STATE_SYN_RCVD = 2;
+  int TCP_STATE_SYN_SENT = 3;
+  int TCP_STATE_ESTABLISHED = 4;
+  int TCP_STATE_CLOSE_WAIT = 5;
+  int TCP_STATE_LAST_ACK = 6;
+  int TCP_STATE_FIN_WAIT_1 = 7;
+  int TCP_STATE_CLOSING = 8;
+  int TCP_STATE_FIN_WAIT2 = 9;
+  int TCP_STATE_TIME_WAIT = 10;
+  int TCP_STATE_CLOSED = 11;
+
+  entry {
+    match_flow { f[proto] != TCP }
+    action_flow { f[dip] = DROP; }
+  }
+
+  entry {
+    match_flow { f[flag_syn] == 1 }
+    match_state { tcp_state == TCP_STATE_CLOSED }
+    action_state {tcp_state = TCP_STATE_SYN_SENT;}
+  }
+
+  entry {
+    match_flow { f[flag_syn] == 1 && f[flag_ack] == 1 }
+    match_state {tcp_state == TCP_STATE_SYN_SENT}
+    action_state {tcp_state = TCP_STATE_SYN_RECIEVED;}
+  }
+
+  entry {
+    match_flow { f[flag_ack] == 1 }
+    match_state {tcp_state == TCP_STATE_SYN_RECIEVED}
+    action_state {tcp_state = TCP_STATE_ESTABLISHED;}
+  }
+
+  entry {
+    match_flow { f[flag_fin] == 1 }
+    match_state {tcp_state == TCP_STATE_ESTABLISHED}
+    action_state {tcp_state = TCP_STATE_FIN_WAIT;}
+  }
+
+  entry {
+    match_flow { f[flag_fin] == 1 && f[flag_ack] == 1 }
+    match_state {tcp_state == TCP_STATE_FIN_WAIT}
+    action_state {tcp_state = TCP_STATE_FIN_WAIT2;}
+  }
+
+  entry {
+    match_flow {f[flag_ack] == 1 }
+    match_state {tcp_state == TCP_STATE_FIN_WAIT2}
+    action_state {tcp_state = TCP_STATE_CLOSED;}
+  }
+
+  entry {
+    match_flow { f[flag_rst] == 1 }
+    match_state {tcp_state == TCP_STATE_ESTABLISHED}
+    action_state {tcp_state = TCP_STATE_CLOSED;}
+  }
+}
