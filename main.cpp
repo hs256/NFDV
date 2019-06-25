@@ -51,11 +51,11 @@ int main(int argc, const char *argv) {
     //t.add_assign_in(pkt_fields[g], val);
     if(af->action == "DROP") {
       //cout << "DROP Packet" << endl;
-      t3 = NULL;
+      t3 = t.new_assert_node("DROP", "", 0);
 //      t.add_ite_node(t1, t2, NULL);
       //break;
     } else if(af->action == "pass") {
-	t3 = NULL;
+	t3 = t.new_assert_node("pass", "", 0);
     } else
 	t3 = NULL;
     

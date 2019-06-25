@@ -1,9 +1,8 @@
 program IDS{
-rule ALLOW = sip:192.168.22.1;
-rule C1 = sport:666;
+rule ALLOW = sip:192.168.171.64;
+rule C1 = sport:6666;
 entry {
  match_flow { f matches ALLOW }
- action_flow {pass;}
 }
 entry {
  match_flow { f mismatches ALLOW }
