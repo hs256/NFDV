@@ -339,5 +339,9 @@ void NFCompilerVisitor::print_entry_flow() {
     return antlrcpp::Any(c);;
   }
 
+  antlrcpp::Any NFCompilerVisitor::visitNew_packet(NFCompilerParser::New_packetContext *ctx) {
+    return visitChildren(ctx);
+  }
+
 
 

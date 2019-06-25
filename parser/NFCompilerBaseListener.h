@@ -110,6 +110,9 @@ public:
   virtual void enterField(NFCompilerParser::FieldContext * /*ctx*/) override { }
   virtual void exitField(NFCompilerParser::FieldContext * /*ctx*/) override { }
 
+  virtual void enterNew_packet(NFCompilerParser::New_packetContext * /*ctx*/) override { }
+  virtual void exitNew_packet(NFCompilerParser::New_packetContext * /*ctx*/) override { }
+
   virtual void enterContents(NFCompilerParser::ContentsContext * /*ctx*/) override { }
   virtual void exitContents(NFCompilerParser::ContentsContext * /*ctx*/) override { }
 

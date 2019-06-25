@@ -39,7 +39,8 @@ match_action  :
 ;
 
 action_statements  :
-	( action_flow | action_state )?
+	( action_flow )?
+	( action_state )?
 ;
 
 match_flow	:
@@ -101,6 +102,7 @@ item  :
 	| LB expression RB #lrexp
 	| ACTION  #action
 	| fields   #field
+	| NEW_PACKET LB RB #new_packet
 ;
 
 contents  :
@@ -161,7 +163,8 @@ FLOW : 'flow' ;
 RULE : 'rule' ;
 
 FIELD : 'sip' | 'dip' | 'UDP'
-	| 'sport' | 'dport' | 'payload' | 'flag_syn' | 'flag_fin' | 'flag_ack' 
+	| 'sport' | 'dport' | 'payload' | 'flag_syn' | 'flag_fin' | 'flag_ack'
+	| 'flag_rst' | 'seq_no' | 'ack_no'
 	| 'tag' | 'iplen' ;
 ACTION: 'DROP' ;
 ENTRY : 'entry' ;
@@ -213,6 +216,7 @@ MATCH_FLOW   : 'match_flow' ;
 MATCH_STATE  : 'match_state' ;
 ACTION_FLOW  : 'action_flow' ;
 ACTION_STATE : 'action_state' ;
+NEW_PACKET   : 'new_packet' ;
 
 IP  :
     [0-9]+ '.' [0-9]+ '.' [0-9]+ '.' [0-9]+

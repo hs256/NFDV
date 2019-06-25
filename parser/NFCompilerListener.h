@@ -108,6 +108,9 @@ public:
   virtual void enterField(NFCompilerParser::FieldContext *ctx) = 0;
   virtual void exitField(NFCompilerParser::FieldContext *ctx) = 0;
 
+  virtual void enterNew_packet(NFCompilerParser::New_packetContext *ctx) = 0;
+  virtual void exitNew_packet(NFCompilerParser::New_packetContext *ctx) = 0;
+
   virtual void enterContents(NFCompilerParser::ContentsContext *ctx) = 0;
   virtual void exitContents(NFCompilerParser::ContentsContext *ctx) = 0;
 

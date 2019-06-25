@@ -181,5 +181,8 @@ public:
     
    antlrcpp::Any visitFields(NFCompilerParser::FieldsContext *ctx);
   
+   antlrcpp::Any visitNew_packet(NFCompilerParser::New_packetContext *ctx) ;
+  
 };
+
 
