@@ -24,8 +24,9 @@ public:
     LT = 33, BT = 34, IN = 35, SUBSET = 36, MATCH = 37, CONNECTION = 38, 
     DATA = 39, COMMA = 40, LB = 41, RB = 42, LCB = 43, RCB = 44, LSB = 45, 
     RSB = 46, COLON = 47, START = 48, ASSIGN = 49, SEMICOLON = 50, MATCH_FLOW = 51, 
-    MATCH_STATE = 52, ACTION_FLOW = 53, ACTION_STATE = 54, IP = 55, INT = 56, 
-    IDENT = 57, BLOCK_COMMENT = 58, LINE_COMMENT = 59, WS = 60
+    MATCH_STATE = 52, ACTION_FLOW = 53, ACTION_STATE = 54, NEW_PACKET = 55, 
+    IP = 56, INT = 57, IDENT = 58, BLOCK_COMMENT = 59, LINE_COMMENT = 60, 
+    WS = 61
   };
 
   enum {
@@ -540,6 +541,19 @@ public:
     ActionContext(ItemContext *ctx);
 
     antlr4::tree::TerminalNode *ACTION();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  New_packetContext : public ItemContext {
+  public:
+    New_packetContext(ItemContext *ctx);
+
+    antlr4::tree::TerminalNode *NEW_PACKET();
+    antlr4::tree::TerminalNode *LB();
+    antlr4::tree::TerminalNode *RB();
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
 
