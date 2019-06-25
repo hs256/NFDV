@@ -68,6 +68,10 @@ void trace::print_all_paths() {
 	cout << "Allocate(" << (*it2)->a << ")" << endl;
       //} else if ((*it2)->op == "==") {
 	//cout << "Assign(" << (*it2)->a << ", " << (*it2)->value << ")" << endl;
+      } else if ((*it2)->a == "DROP") {
+	cout << "DROP pkt" << endl;
+      } else if ((*it2)->a == "pass") {
+	cout << "Pass pkt" << endl;
       } else {
 	cout << "Assert(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
       }
@@ -163,7 +167,8 @@ void trace::add_decl_node(string s) {
     vector<struct tracenode*>::iterator it;
     for (it = leaves.begin(); it != leaves.end(); it++) {
       //temp->id = allocate_ins_count++;
-      (*it)->left = new_decl_node(s);
+      if ((*it)->a != "DROP" && (*it)->a != "pass")
+	(*it)->left = new_decl_node(s);
       //cout << "parent id " << (*it)->id << " " << "child id " << temp->id << endl;
     }
   }
@@ -183,7 +188,8 @@ void trace::add_assert_node(string s1, string op, int value) {
   vector<struct tracenode*>::iterator it;
   for (it = leaves.begin(); it != leaves.end(); it++) {
     //temp->id = assert_ins_count++;
-    (*it)->left = new_assert_node(s1, op, value);;
+    if ((*it)->a != "DROP" && (*it)->a != "pass")
+      (*it)->left = new_assert_node(s1, op, value);
     //cout << "parent id " << (*it)->id << " " << "child id " << temp->id << endl;
   }
   return;
@@ -195,10 +201,12 @@ void trace::add_ite_node(struct tracenode *t1, struct tracenode *t2, struct trac
   //cout << "leaf nodes in ite " << leaves.size() << endl;
   vector<struct tracenode*>::iterator it;
   for (it = leaves.begin(); it != leaves.end(); it++) {
-    (*it)->left = new_assert_node(t1->a, t1->op, t1->value);
-    (*it)->right = new_assert_node(t2->a, t2->op, t2->value);
-    if (t3 != NULL)
-      (*it)->left->left = new_assert_node(t3->a, t3->op, t3->value);
+    if ((*it)->a != "DROP" && (*it)->a != "pass") {
+      (*it)->left = new_assert_node(t1->a, t1->op, t1->value);
+      (*it)->right = new_assert_node(t2->a, t2->op, t2->value);
+      if (t3 != NULL)
+	(*it)->left->left = new_assert_node(t3->a, t3->op, t3->value);
+    }
   }
 }
 
@@ -253,6 +261,7 @@ void trace::add_assert_in(string a, string op, int value) {
 trace::trace() {
   allocate_ins_count = 0;
   assert_ins_count = 0;
+  root = NULL;
   cout << "creating symbolic packet" << endl;
   trace::add_allocate_in("L3+0", 4);
   trace::add_allocate_in("L3+72", 8);
