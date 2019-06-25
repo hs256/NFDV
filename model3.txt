@@ -1,0 +1,30 @@
+program tcp_3WHS {
+  int STREAM_STATE_NONE = 0;
+  int STREAM_STATE_SYN = 1;
+  int STREAM_STATE_SYN_ACK = 2;
+  int STREAM_STATE_ACK = 3;
+  int STREAM_STATE_ESTABLISHED = 4;
+  int STREAM_STATE_TIMEOUT = 5;
+  int STREAM_STATE_UNREACH = 6;
+  int STREAM_STATE_CLOSED = 7;
+
+  int session_established(sip&dip&sport&dport) = 0;
+  int session_state(sip&dip&sport&dport);
+
+  entry {
+    match_flow { f[proto] != TCP }
+    action_flow { f[dip] = DROP; }
+  }
+
+  entry {
+    match_flow { f[flag_syn] == 1 && f[flag_ack] != 1}
+    match_state { session_established == 0}
+    action_flow { f2 = new_packet(); f2[sip] = f[dip]; f2[dip] = f[sip]; f2[sport] = f[dport]; f2[dport] = f[sport]; f2[flag_syn] = 1; f2[flag_ack] = 1; }
+    action_state { session_state = STREAM_STATE_SYN; session_established = 1;}
+  }
+
+  entry {
+    match_flow { f[flag_ack] == 1 }
+    match_state {session_established == 1}
+    action_state {pass;}
+  }
