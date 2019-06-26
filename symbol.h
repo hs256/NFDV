@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 #ifndef SYMBOL_H
 #define SYMBOL_H
@@ -10,15 +11,15 @@ class Symbol {
   string type;
   string subtype;
   string value;
-  string granularity;
+  vector<string> granularity;
   Symbol *next;
 public:
-  Symbol(string n, string t, string st, string v, string g);
+  Symbol(string n, string t, string st, string v, vector<string> g);
   string getName();
   string getType();
   string getSubtype();
   string getValue();
-  string getGranularity();
+  vector<string> getGranularity();
   friend class SymbolTable;
 };
 

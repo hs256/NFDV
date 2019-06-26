@@ -4,7 +4,7 @@
 
 using namespace std;
 
-Symbol::Symbol(string n, string t, string st, string v, string g) {
+Symbol::Symbol(string n, string t, string st, string v, vector<string> g) {
   name = n;
   type= t;
   subtype = st;
@@ -29,7 +29,7 @@ string Symbol::getSubtype() {
   return subtype;
 }
 
-string Symbol::getGranularity() {
+vector<string> Symbol::getGranularity() {
   return granularity;
 }
 

@@ -36,17 +36,17 @@ int main(int argc, const char *argv) {
     struct match_flow *mf = it->first;
     struct action_flow *af = it->second;
     string v = mf->var;
-    string g = visitor.ST.getGranularitybyName(v);
+    vector<string> g = visitor.ST.getGranularitybyName(v);
     string c = visitor.ST.getValuebyName(v);
     int val = stoi(c);
     //cout << pkt_fields[g] << " " << val << endl;
     struct tracenode *t1, *t2, *t3;
     if (mf->match) {
-      t1 = t.new_assert_node(pkt_fields[g], "==", val);
-      t2 = t.new_assert_node(pkt_fields[g], "!=", val);
+      t1 = t.new_assert_node(pkt_fields[g[0]], "==", val);
+      t2 = t.new_assert_node(pkt_fields[g[0]], "!=", val);
     } else {
-      t1 = t.new_assert_node(pkt_fields[g], "!=", val);
-      t2 = t.new_assert_node(pkt_fields[g], "==", val);
+      t1 = t.new_assert_node(pkt_fields[g[0]], "!=", val);
+      t2 = t.new_assert_node(pkt_fields[g[0]], "==", val);
     }
     //t.add_assign_in(pkt_fields[g], val);
     if(af->action == "DROP") {

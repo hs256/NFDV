@@ -18,7 +18,7 @@ int SymbolTable::hashf(string name) {
   return (num % 100);
 }
 
-bool SymbolTable::add(string name, string type, string subtype, string value, string granularity) {
+bool SymbolTable::add(string name, string type, string subtype, string value, vector<string> granularity) {
   int index = hashf(name);
   Symbol *p = new Symbol(name, type, subtype, value, granularity);
 
@@ -77,7 +77,7 @@ string SymbolTable::getValuebyName(string name) {
   }
 }
 
-string SymbolTable::getGranularitybyName(string name) {
+vector<string> SymbolTable::getGranularitybyName(string name) {
   Symbol *s = find(name);
   return s->getGranularity();
 }
@@ -85,7 +85,13 @@ string SymbolTable::getGranularitybyName(string name) {
 void SymbolTable::printST() {
   for(int i = 0; i < MAX; i++) {
     if (head[i] != NULL) {
-      cout << head[i]->getName() << " " << head[i]->getType() << " " << head[i]->getSubtype() << " " <<  head[i]->getValue() << " " << head[i]->getGranularity() << endl;
+      cout << head[i]->getName() << " " << head[i]->getType() << " " << head[i]->getSubtype() << " " <<  head[i]->getValue() << " ";
+      vector<string> gr = head[i]->getGranularity();
+      vector<string>::iterator it;
+      for (it = gr.begin(); it != gr.end(); it++) {
+	cout << (*it) << " " ;
+      }
+      cout << endl;
     }
   }
 }

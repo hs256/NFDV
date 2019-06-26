@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 #include "symbol.h"
 
@@ -15,12 +16,12 @@ class SymbolTable {
 public:
   SymbolTable();
   int hashf(string name);
-  bool add(string name, string type, string subtype, string value, string granularity);
+  bool add(string name, string type, string subtype, string value, vector<string> granularity);
   Symbol* find(string name);
   string getTypebyName(string name);
   string getSubtypebyName(string name);
   string getValuebyName(string name);
-  string getGranularitybyName(string name);
+  vector<string> getGranularitybyName(string name);
   void printST();
 };
 
