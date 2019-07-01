@@ -162,7 +162,7 @@ MAP  : 'map' ;
 FLOW : 'flow' ;
 RULE : 'rule' ;
 
-FIELD : 'sip' | 'dip' | 'UDP'
+FIELD : 'sip' | 'dip' | 'UDP' | 'proto'
 	| 'sport' | 'dport' | 'payload' | 'flag_syn' | 'flag_fin' | 'flag_ack'
 	| 'flag_rst' | 'seq_no' | 'ack_no'
 	| 'tag' | 'iplen' ;
