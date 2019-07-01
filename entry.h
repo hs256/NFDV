@@ -11,4 +11,22 @@ struct action_flow {
   string action;
 };
 
+struct match_state {
+  string state_var;
+  string op;
+  string state_val;
+};
+
+struct action_state {
+  string state_var;
+  string op;
+  string state_val;
+};
+
+struct entry {
+  struct match_flow *m_f;
+  struct action_flow *a_f;
+  struct match_state *m_s;
+  struct action_state *a_s;
+};
 #endif

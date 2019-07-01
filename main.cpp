@@ -15,7 +15,7 @@ using namespace std;
 using namespace antlr4;
 
 int main(int argc, const char *argv) {
-  ifstream stream("model.txt", ios::in);
+  ifstream stream("model2.txt", ios::in);
 
   ANTLRInputStream input(stream);
   NFCompilerLexer lexer(&input);
@@ -27,14 +27,15 @@ int main(int argc, const char *argv) {
   NFCompilerVisitor visitor;
   antlrcpp::Any v = visitor.visitProgram(nf_name);
   visitor.ST.printST();
-  visitor.print_entry_flow();
+  visitor.print_entries();
 
   trace t;
-  map<struct match_flow*, struct action_flow*>::reverse_iterator it;
-  for (it = visitor.entry_flow.rbegin(); it != visitor.entry_flow.rend(); it++) {
+  //map<struct match_flow*, struct action_flow*>::reverse_iterator it;
+  vector<struct entry*>::iterator it;
+  for (it = visitor.entries.begin(); it != visitor.entries.end(); it++) {
     //cout << "visitor entries" << endl;
-    struct match_flow *mf = it->first;
-    struct action_flow *af = it->second;
+    struct match_flow *mf = (*it)->m_f;
+    struct action_flow *af = (*it)->a_f;
     string v = mf->var;
     vector<string> g = visitor.ST.getGranularitybyName(v);
     string c = visitor.ST.getValuebyName(v);
