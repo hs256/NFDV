@@ -7,6 +7,8 @@ extern map<string, string> pkt_fields {
   {"proto", "L3+72"},
   {"sport", "L4+0"},
   {"dport", "L4+16"},
+  {"flag_ack", "L4+107"},
+  {"flag_rst", "L4+109"},
   {"flag_syn", "L4+110"},
   {"flag_fin", "L4+111"}
 };

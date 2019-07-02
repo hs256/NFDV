@@ -37,6 +37,11 @@ bool SymbolTable::add(string name, string type, string subtype, string value, ve
   return false;
 }
 
+void SymbolTable::modify(string name, string new_value) {
+  Symbol *s = SymbolTable::find(name);
+  s->value = new_value;
+}
+
 Symbol* SymbolTable::find(string name) {
   int i = hashf(name);
   Symbol *start = head[i];
@@ -48,13 +53,12 @@ Symbol* SymbolTable::find(string name) {
 
   while(start != NULL) {
     if (start->getName() == name) {
-      //cout << "symbol with " << name << " is found " << endl;
-      return head[i];
+      //cout << "symbol with " << name << " and value " << start->getValue() << " is found " << endl;
+      return start;
     }
 
     start = start->next;
   }
-
   return NULL;
 }
 
@@ -79,19 +83,29 @@ string SymbolTable::getValuebyName(string name) {
 
 vector<string> SymbolTable::getGranularitybyName(string name) {
   Symbol *s = find(name);
-  return s->getGranularity();
+  if (s != NULL)
+    return s->getGranularity();
+  else
+    return vector<string>();
 }
 
 void SymbolTable::printST() {
   for(int i = 0; i < MAX; i++) {
-    if (head[i] != NULL) {
-      cout << head[i]->getName() << " " << head[i]->getType() << " " << head[i]->getSubtype() << " " <<  head[i]->getValue() << " ";
-      vector<string> gr = head[i]->getGranularity();
+    Symbol *start = head[i];
+    //if (start != NULL) {
+    while (start != NULL) {
+      cout << start->getName() << " " << start->getType() << " " << start->getSubtype() << " " <<  start->getValue() << " ";
+      vector<string> gr = start->getGranularity();
       vector<string>::iterator it;
       for (it = gr.begin(); it != gr.end(); it++) {
 	cout << (*it) << " " ;
       }
       cout << endl;
+      if (start->next != NULL)
+	start = start->next;
+      else
+	break;
     }
+      //cout << endl;
   }
 }

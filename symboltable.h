@@ -17,6 +17,7 @@ public:
   SymbolTable();
   int hashf(string name);
   bool add(string name, string type, string subtype, string value, vector<string> granularity);
+  void modify(string name, string new_value);
   Symbol* find(string name);
   string getTypebyName(string name);
   string getSubtypebyName(string name);
