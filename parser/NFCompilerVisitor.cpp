@@ -22,34 +22,68 @@
    * Visit parse trees produced by NFCompilerParser.
    */
   
-void NFCompilerVisitor::print_entry_flow() {
-  map<struct match_flow*, struct action_flow*>::iterator it;
-  for (it = NFCompilerVisitor::entry_flow.begin(); it != NFCompilerVisitor::entry_flow.end(); it++) {
-    struct match_flow *mf = it->first;
-    struct action_flow *af = it->second;
-    cout << mf->match << "  " << mf->var << "  " << af->field << "  " << af->action << endl ;
+void NFCompilerVisitor::print_entries() {
+  vector<struct entry*>::iterator it;
+  for (it = NFCompilerVisitor::entries.begin(); it != NFCompilerVisitor::entries.end(); it++) {
+    struct match_flow *mf = (*it)->m_f;
+    struct action_flow *af = (*it)->a_f;
+    struct match_state *ms = (*it)->m_s;
+    cout << mf->match << "  " << mf->var << " && " << ms->state_var << " " << ms->op << " " << ms->state_val << "  " << af->field << "  " << af->action << endl ;
   }
 }
 
     antlrcpp::Any NFCompilerVisitor::visitProgram(NFCompilerParser::ProgramContext *context) {
-      NFCompilerVisitor::ST.add(context->IDENT()->getText(), "program", "program", "NULL", "per-nf");
-      NFCompilerVisitor::ST.add("f", "flow", "flow", "NULL", "per-nf");
+      vector<string> per_nf;
+      per_nf.push_back("per-nf");
+      NFCompilerVisitor::ST.add(context->IDENT()->getText(), "program", "program", "NULL", per_nf);
+      NFCompilerVisitor::ST.add("f", "flow", "flow", "NULL", per_nf);
       return visitChildren(context);
     }
 
 
     antlrcpp::Any NFCompilerVisitor::visitDeclare_entry(NFCompilerParser::Declare_entryContext *context) {
       std::string type = context->type()->getText();
-      antlrcpp::Any a = NFCompilerVisitor::visit(context->expression(0));
       if (type == "rule") {
+	antlrcpp::Any a = NFCompilerVisitor::visit(context->expression(0));
 	try {
 	map<string, string> m;
 	m = a.as<map<string, string>>();
-	NFCompilerVisitor::ST.add(context->IDENT()->getText(),type, type, m.begin()->second, m.begin()->first);
-	//cout << m.begin()->first << " " << m.begin()->second << endl;
+	vector<string> v_f;
+	v_f.push_back(m.begin()->first);
+	NFCompilerVisitor::ST.add(context->IDENT()->getText(),type, type, m.begin()->second, v_f);
+	//cout << context->IDENT()->getText() << " " << m.begin()->first << " " << m.begin()->second << endl;
 	} catch (bad_cast const& e) {
 	}
+      } else if (type == "int") {
+	if (context->ASSIGN() != NULL && context->expression().size() == 1) {
+	  antlrcpp::Any a1 = NFCompilerVisitor::visit(context->expression(0));
+	  try {
+	    string int_c;
+	    int_c = a1.as<string>();
+	    if (NFCompilerVisitor::ST.find(int_c) == NULL) {
+	      NFCompilerVisitor::ST.add(context->IDENT()->getText(), type, type, int_c, vector<string>());
+	    } else {
+	      string int_actual = NFCompilerVisitor::ST.getValuebyName(int_c);
+	      NFCompilerVisitor::ST.add(context->IDENT()->getText(), type, type, int_actual, vector<string>());
+	    }
+	  } catch (bad_cast const& e) {
+	  }
+	} else if (context->ASSIGN() != NULL && context->expression().size() == 2) {
+	  antlrcpp::Any a1 = NFCompilerVisitor::visit(context->expression(1));
+	  try {
+	    string int_c;
+	    int_c = a1.as<string>();
+	    if (NFCompilerVisitor::ST.find(int_c) == NULL) {
+	      NFCompilerVisitor::ST.add(context->IDENT()->getText(), type, type, int_c, vector<string>());
+	    } else {
+	      string int_actual = NFCompilerVisitor::ST.getValuebyName(int_c);
+	      NFCompilerVisitor::ST.add(context->IDENT()->getText(), type, type, int_actual, vector<string>());
+	    }
+	  } catch (bad_cast const& e) {
+	  }
+	}
       }
+
       return visitChildren(context);
     }
 
@@ -58,9 +92,12 @@ void NFCompilerVisitor::print_entry_flow() {
   }
 
   antlrcpp::Any NFCompilerVisitor::visitEntry(NFCompilerParser::EntryContext *ctx)  {
-    antlrcpp::Any a_mf = NFCompilerVisitor::visit(ctx->match_action()->match_flow()->condition()->expression());
     struct match_flow *mf = new match_flow;
     struct action_flow *af = new action_flow;
+    struct match_state *ms = new match_state;
+    struct action_state *as = new action_state;
+    struct entry *en = new entry;
+    antlrcpp::Any a_mf = NFCompilerVisitor::visit(ctx->match_action()->match_flow()->condition()->expression());
     try {
       map<bool, string> m;
       m = a_mf.as<map<bool, string>>();
@@ -93,7 +130,27 @@ void NFCompilerVisitor::print_entry_flow() {
       af->field = "";
       af->action = "pass";
     }
-    NFCompilerVisitor::entry_flow.insert(pair<struct match_flow*, struct action_flow*>(mf, af));  
+
+    if (ctx->match_action()->match_state()) {
+      antlrcpp::Any a3 = NFCompilerVisitor::visit(ctx->match_action()->match_state()->condition()->expression());
+      try {
+	vector<string> t_m;
+	t_m = a3.as<vector<string>>();
+	ms->state_var = t_m[0];
+	ms->op = t_m[1];
+	ms->state_val = t_m[2];
+	//cout << t_m[0] << " " << t_m[1] << " " << t_m[2] << " in visit entry " << endl; 
+      } catch (bad_cast const& e) {
+	cout << "can't parse match state" << endl;
+      }
+    }
+	
+    en->m_f = mf;
+    en->a_f = af;
+    en->m_s = ms;
+    en->a_s = as;
+    //NFCompilerVisitor::entry_flow.insert(pair<struct match_flow*, struct action_flow*>(mf, af));  
+    NFCompilerVisitor::entries.push_back(en);
     return visitChildren(ctx);
   }
 
@@ -184,7 +241,6 @@ void NFCompilerVisitor::print_entry_flow() {
      if (ctx->op()->getText() == "matches" || ctx->op()->getText() == "mismatches") {
        string m = ctx->op()->getText();
        //struct match_flow *mf = new match_flow;
-       map<bool, string> mf;
        bool match;
        if(m == "matches")
 	 match = true;
@@ -192,15 +248,33 @@ void NFCompilerVisitor::print_entry_flow() {
 	 match = false;
        antlrcpp::Any a = NFCompilerVisitor::visit(ctx->expression(1));
 	try {
-	string c;
-	c = a.as<string>();
-	//mf->var = c;
-	mf.insert(pair<bool, string>(match, c));
-	antlrcpp::Any temp(mf);
-	return temp;
+	  string c;
+	  map<bool, string> mf;
+	  c = a.as<string>();
+	  //mf->var = c;
+	  mf.insert(pair<bool, string>(match, c));
+	  antlrcpp::Any temp(mf);
+	  return temp;
 	} catch (bad_cast const& e) {
 	}
-    }
+    } else if (ctx->op()->getText() == "==") {
+	antlrcpp::Any a1 = NFCompilerVisitor::visit(ctx->expression(0));
+	antlrcpp::Any a2 = NFCompilerVisitor::visit(ctx->expression(1));
+	try {
+	  string c1, c2;
+	  vector<string> eq_s;
+	  c1 = a1.as<string>();
+	  c2 = a2.as<string>();
+	  //cout << "match state in double " << c1 << " " << ctx->op()->getText() << " "  << c2 << endl;
+	  eq_s.push_back(c1);
+	  eq_s.push_back("==");
+	  eq_s.push_back(c2);
+	  antlrcpp::Any temp1(eq_s);
+	  return temp1;
+	} catch (bad_cast const& e) {
+	}
+      }
+	
     return visitChildren(ctx);
   }
 
@@ -313,11 +387,6 @@ void NFCompilerVisitor::print_entry_flow() {
      string c = ctx->getStop()->getText();
      map<string, string> m;
      m.insert(pair<string, string>(field, c));
-     /*antlr4::atn::PredictionContext *p = ctx->getRuleContext<antlr4::atn::PredictionContext>(0);
-    NFCompilerParser::AtomContext *nf_atom = p->getParent(0);
-    NFCompilerParser::ExpressionContext *nf_expr = nf_atom->getParent(0);
-    NFCompilerParser::Declare_entryContext *nf_d = nf_expr->getParent(0);
-    NFCompilerVisitor::ST.add(nf_d->IDENT()->getText(),"rule", "rule", ctx->constant()->getText(), ctx->fields()->getText);*/
     return antlrcpp::Any(m);
   }
 
