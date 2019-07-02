@@ -1,5 +1,4 @@
 program tcp_reassembly {
-  int tcp_state(sip&dip&sport&dport) = TCP_STATE_CLOSED;
   int TCP_STATE_NONE = 0;
   int TCP_STATE_LISTEN = 1;
   int TCP_STATE_SYN_RCVD = 2;
@@ -12,50 +11,56 @@ program tcp_reassembly {
   int TCP_STATE_FIN_WAIT2 = 9;
   int TCP_STATE_TIME_WAIT = 10;
   int TCP_STATE_CLOSED = 11;
+  int tcp_state(sip&dip&sport&dport) = TCP_STATE_CLOSED;
+  rule tcp_proto = proto:6;
+  rule tcp_syn = flag_syn:1;
+  rule tcp_ack = flag_ack:1;
+  rule tcp_fin = flag_fin:1;
+  rule tcp_rst = flag_rst:1;
 
   entry {
-    match_flow { f[proto] != TCP }
+    match_flow { f mismatches tcp_proto }
     action_flow { f[dip] = DROP; }
   }
 
   entry {
-    match_flow { f[flag_syn] == 1 }
+    match_flow { f matches tcp_syn }
     match_state { tcp_state == TCP_STATE_CLOSED }
     action_state {tcp_state = TCP_STATE_SYN_SENT;}
   }
 
   entry {
-    match_flow { f[flag_syn] == 1 && f[flag_ack] == 1 }
+    match_flow { f matches tcp_syn && f matches tcp_ack }
     match_state {tcp_state == TCP_STATE_SYN_SENT}
     action_state {tcp_state = TCP_STATE_SYN_RECIEVED;}
   }
 
   entry {
-    match_flow { f[flag_ack] == 1 }
+    match_flow { f matches tcp_ack }
     match_state {tcp_state == TCP_STATE_SYN_RECIEVED}
     action_state {tcp_state = TCP_STATE_ESTABLISHED;}
   }
 
   entry {
-    match_flow { f[flag_fin] == 1 }
+    match_flow { f matches tcp_fin }
     match_state {tcp_state == TCP_STATE_ESTABLISHED}
     action_state {tcp_state = TCP_STATE_FIN_WAIT;}
   }
 
   entry {
-    match_flow { f[flag_fin] == 1 && f[flag_ack] == 1 }
+    match_flow { f matches tcp_fin && f matches tcp_ack }
     match_state {tcp_state == TCP_STATE_FIN_WAIT}
     action_state {tcp_state = TCP_STATE_FIN_WAIT2;}
   }
 
   entry {
-    match_flow {f[flag_ack] == 1 }
+    match_flow {f matches tcp_ack }
     match_state {tcp_state == TCP_STATE_FIN_WAIT2}
     action_state {tcp_state = TCP_STATE_CLOSED;}
   }
 
   entry {
-    match_flow { f[flag_rst] == 1 }
+    match_flow { f matches tcp_rst }
     match_state {tcp_state == TCP_STATE_ESTABLISHED}
     action_state {tcp_state = TCP_STATE_CLOSED;}
   }
