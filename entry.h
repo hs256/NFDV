@@ -23,8 +23,13 @@ struct action_state {
   string state_val;
 };
 
+struct match_entry_flow {
+  bool op;
+  struct match_flow *mf;
+};
+
 struct entry {
-  struct match_flow *m_f;
+  vector<struct match_entry_flow *> m_f;
   struct action_flow *a_f;
   struct match_state *m_s;
   struct action_state *a_s;

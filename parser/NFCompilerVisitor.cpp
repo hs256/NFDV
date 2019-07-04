@@ -25,10 +25,20 @@
 void NFCompilerVisitor::print_entries() {
   vector<struct entry*>::iterator it;
   for (it = NFCompilerVisitor::entries.begin(); it != NFCompilerVisitor::entries.end(); it++) {
-    struct match_flow *mf = (*it)->m_f;
+    vector<struct match_entry_flow*> mf = (*it)->m_f;
     struct action_flow *af = (*it)->a_f;
     struct match_state *ms = (*it)->m_s;
-    cout << mf->match << "  " << mf->var << " && " << ms->state_var << " " << ms->op << " " << ms->state_val << "  " << af->field << "  " << af->action << endl ;
+    vector<struct match_entry_flow*>::iterator it2;
+    for (it2 = mf.begin(); it2 != mf.end(); it2++) {
+      cout << (*it2)->op << " ";
+      struct match_flow *mff = (*it2)->mf;
+      if (mff->match)
+	cout << " match ";
+      else
+	cout << " mismatch ";
+      cout << mff->var << " " ;
+    }
+    cout << " && " << ms->state_var << " " << ms->op << " " << ms->state_val << "  " << af->field << "  " << af->action << endl ;
   }
 }
 
@@ -97,14 +107,29 @@ void NFCompilerVisitor::print_entries() {
     struct match_state *ms = new match_state;
     struct action_state *as = new action_state;
     struct entry *en = new entry;
-    antlrcpp::Any a_mf = NFCompilerVisitor::visit(ctx->match_action()->match_flow()->condition()->expression());
-    try {
-      map<bool, string> m;
-      m = a_mf.as<map<bool, string>>();
-      mf->match = m.begin()->first;
-      mf->var = m.begin()->second;
-    } catch (bad_cast const& e) {
-      //cout << "unable to get map match flow " << endl;
+    vector<struct match_entry_flow *> map_mf;
+    if (ctx->match_action()->match_flow() != NULL) {
+      try {
+	//cout << "one expression in match_flow " << endl;
+	antlrcpp::Any a_mf = NFCompilerVisitor::visit(ctx->match_action()->match_flow()->condition()->expression());
+	map<bool, string> m;
+	m = a_mf.as<map<bool, string>>();
+	mf->match = m.begin()->first;
+	mf->var = m.begin()->second;
+	struct match_entry_flow *mef = new match_entry_flow;
+	mef->op = true;
+	mef->mf = mf;
+	map_mf.push_back(mef);
+      } catch (bad_cast const& e) {
+	//cout << "unable to get map match flow " << endl;
+	try {
+	  antlrcpp::Any a_map_mf = NFCompilerVisitor::visit(ctx->match_action()->match_flow()->condition()->expression());
+	  map_mf = a_map_mf.as<vector<struct match_entry_flow *>>();
+	  //cout << map_mf.size() << "map mf size in visit entry " << endl;
+	} catch (bad_cast const &e) {
+	  //cout << "unabel to get map mf " << endl;
+	}
+      }
     }
 
     if (ctx->match_action()->action_statements()->action_flow()) {
@@ -141,11 +166,10 @@ void NFCompilerVisitor::print_entries() {
 	ms->state_val = t_m[2];
 	//cout << t_m[0] << " " << t_m[1] << " " << t_m[2] << " in visit entry " << endl; 
       } catch (bad_cast const& e) {
-	cout << "can't parse match state" << endl;
+	//cout << "can't parse match state" << endl;
       }
     }
-	
-    en->m_f = mf;
+    en->m_f = map_mf;
     en->a_f = af;
     en->m_s = ms;
     en->a_s = as;
@@ -234,13 +258,14 @@ void NFCompilerVisitor::print_entries() {
   }
 
    antlrcpp::Any NFCompilerVisitor::visitSingle(NFCompilerParser::SingleContext *ctx)  {
+    //cout << ctx->op()->getText() << " in single context " << endl;
     return visitChildren(ctx);
   }
 
    antlrcpp::Any NFCompilerVisitor::visitDouble(NFCompilerParser::DoubleContext *ctx)  {
-     if (ctx->op()->getText() == "matches" || ctx->op()->getText() == "mismatches") {
+     //cout << ctx->expression(0)->getText() << " " << ctx->op()->getText() << " " << ctx->expression(1)->getText() << " in double context " <<  endl;
+     if ((ctx->op()->getText() == "matches" || ctx->op()->getText() == "mismatches") && ctx->expression(0)->getText() == "f") {
        string m = ctx->op()->getText();
-       //struct match_flow *mf = new match_flow;
        bool match;
        if(m == "matches")
 	 match = true;
@@ -251,13 +276,48 @@ void NFCompilerVisitor::print_entries() {
 	  string c;
 	  map<bool, string> mf;
 	  c = a.as<string>();
-	  //mf->var = c;
 	  mf.insert(pair<bool, string>(match, c));
 	  antlrcpp::Any temp(mf);
 	  return temp;
 	} catch (bad_cast const& e) {
 	}
-    } else if (ctx->op()->getText() == "==") {
+      } else if ((ctx->op()->getText() == "matches" || ctx->op()->getText() == "mismatches")) {
+	string m = ctx->op()->getText();
+	bool match;
+	if(m == "matches")
+	   match = true;
+	else if (m == "mismatches")
+	   match = false;
+	string c2;
+	vector<struct match_entry_flow*> map_mft;
+	c2 = ctx->expression(1)->getText();
+	struct match_flow *mf1 = new match_flow;
+	struct match_flow *mf2 = new match_flow;
+	struct match_entry_flow *mef1 = new match_entry_flow;
+	struct match_entry_flow *mef2 = new match_entry_flow;
+	mf2->match = match;
+	mf2->var = c2;
+	try {
+	  antlrcpp::Any a1 = NFCompilerVisitor::visit(ctx->expression(0));
+	  map<bool, string> c1;
+	  c1 = a1.as<map<bool, string>>();
+	  mf1->match = c1.begin()->first;
+	  mf1->var = c1.begin()->second;
+	  //cout << mf1->match << " " << mf1->var << " " << mf2->match << " " << mf2->var << endl;  
+	  //map_mft.insert(pair<bool, struct match_flow*>(true, mf1));
+	  //map_mft.insert(pair<bool, struct match_flow*>(true, mf2));
+	  mef1->op = true;
+	  mef1->mf = mf1;
+	  mef2->op = true;
+	  mef2->mf = mf2;
+	  map_mft.push_back(mef1);
+	  map_mft.push_back(mef2);
+	  return antlrcpp::Any(map_mft);
+	} catch (bad_cast const& e) {
+	}
+      } else if (ctx->op()->getText() == "&&") {
+	  return NFCompilerVisitor::visit(ctx->expression(0));
+      } else if (ctx->op()->getText() == "==") {
 	antlrcpp::Any a1 = NFCompilerVisitor::visit(ctx->expression(0));
 	antlrcpp::Any a2 = NFCompilerVisitor::visit(ctx->expression(1));
 	try {
