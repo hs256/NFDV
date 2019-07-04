@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <map>
 
 #include "antlr/antlr4-runtime.h"
 #include "parser/NFCompilerLexer.h"
@@ -8,11 +9,24 @@
 #include "symboltable.h"
 #include "instructions.h"
 #include "trace.h"
-#include "pkt.h"
+//#include "pkt.h"
 
 using namespace std;
 
 using namespace antlr4;
+
+map<string, string> pkt_fields {
+  {"sip", "L3+96"},
+  {"dip", "L3+128"},
+  {"proto", "L3+72"},
+  {"sport", "L4+0"},
+  {"dport", "L4+16"},
+  {"flag_ack", "L4+107"},
+  {"flag_rst", "L4+109"},
+  {"flag_syn", "L4+110"},
+  {"flag_fin", "L4+111"}
+};
+
 
 int main(int argc, const char *argv) {
   ifstream stream("model2.txt", ios::in);
@@ -88,12 +102,12 @@ int main(int argc, const char *argv) {
 	t3 = t.new_assert_node("pass", "", 0);
       else
 	t3 = NULL;
-      t.add_mite_node(tmp1, tmp2, t3);
+      t.add_mlrite_nodes(t3, tmp1);
     }
   }
-  //t.print_all_paths();
-  t.execute();
   t.print_all_paths();
+  t.execute();
+  //t.print_all_paths();
 
   return 0;
 }

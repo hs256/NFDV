@@ -1,7 +1,19 @@
+#include <map>
+#include <string>
+
 #ifndef PKT_H
 #define PKT_H
 
-extern map<string, string> pkt_fields {
+std::map<std::string, std::string> negated_op {
+  {"==", "!="},
+  {"=", "!=" },
+  {"<", ">="},
+  {"<=", ">"},
+  {">", "<="},
+  {">=", "<"}
+};
+
+std::map<std::string, std::string> pkt_fields {
   {"sip", "L3+96"},
   {"dip", "L3+128"},
   {"proto", "L3+72"},
