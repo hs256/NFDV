@@ -54,7 +54,9 @@ class trace {
   void add_allocate_in(string a, int size);
   void add_assign_in(string a, int value);
   void add_assert_in(string a, string op, int d);
+  struct tracenode *add_ltree_nodes(struct tracenode *r, vector<struct tracenode*> tmp);
   void add_ite_node(struct tracenode *t1, struct tracenode *t2, struct tracenode *t3);
+  void add_mite_node(vector<struct tracenode *> tmp1, vector<struct tracenode *> tmp2, struct tracenode *action);
   int execute();
   bool is_allocated(string a);
   struct allocate_in *allocated_sym(string a);

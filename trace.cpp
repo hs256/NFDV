@@ -210,6 +210,52 @@ void trace::add_ite_node(struct tracenode *t1, struct tracenode *t2, struct trac
   }
 }
 
+struct tracenode* trace::add_ltree_nodes(struct tracenode *r, vector<struct tracenode *> tmp) {
+  vector<struct tracenode *>::iterator it;
+  struct tracenode *a = r;
+  for (it = tmp.begin(); it != tmp.end(); it++) {
+    a->left = new_assert_node((*it)->a, (*it)->op, (*it)->value);
+    a = a->left;
+  }
+  return a;
+}
+
+void trace::add_mite_node(vector<struct tracenode *> tmp1, vector<struct tracenode *> tmp2, struct tracenode *action) {
+  vector<struct tracenode*> leaves;
+  leaves = trace::leaf_nodes(root, leaves);
+  vector<struct tracenode *>::iterator it;
+  for (it = leaves.begin(); it != leaves.end(); it++) {
+    if ((*it)->a != "DROP" && (*it)->a != "pass") {
+      (*it)->left = new_assert_node(tmp1[0]->a, tmp1[0]->op, tmp1[0]->value);
+      (*it)->right = new_assert_node(tmp2[0]->a, tmp2[0]->op, tmp2[0]->value);
+      /*vector<struct tracenode *>::iterator it1 = tmp1.begin();
+      vector<struct tracenode *>::iterator it2 = tmp2.begin();
+      while (it1 != tmp1.end()) {
+	vector<struct tracenode *>::iterator it3 = next(it1);
+	if (*it3 != NULL)
+	  (*it)->left->left = new_assert_node((*it3)->a, (*it3)->op, (*it3)->value);
+	it1++;
+      }
+      it1 = tmp1.end();*/
+      tmp1.erase(tmp1.begin());
+      tmp2.erase(tmp2.begin());
+      struct tracenode *al = add_ltree_nodes((*it)->left, tmp1);
+      struct tracenode *ar = add_ltree_nodes((*it)->right, tmp2);
+      if (action != NULL) {
+	//cout << action->a << " " << action->op << " " << action->value << endl;
+	al->left = new_assert_node(action->a, action->op, action->value);
+      }
+      /*while (it2 != tmp2.end()) {
+	vector<struct tracenode *>::iterator it4 = next(it2);
+	if (*it4 != NULL)
+	  (*it2)->left = new_assert_node((*it4)->a, (*it4)->op, (*it4)->value);
+	it2++;
+      }*/
+    }
+  }
+}
+  
+
 struct tracenode* trace::new_assert_node(string a, string op, int v) {
   struct tracenode *temp = new tracenode;
   temp->id = assert_ins_count++;
