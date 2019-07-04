@@ -16,7 +16,8 @@ map<string, string> negated_op {
   {"<", ">="},
   {"<=", ">"},
   {">", "<="},
-  {">=", "<"}
+  {">=", "<"},
+  {"!=", "=="}
 };
 
 vector<struct tracenode*> trace::leaf_nodes(struct tracenode *node, vector<struct tracenode*> leaves) {
