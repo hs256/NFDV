@@ -1,11 +1,23 @@
+#include <iostream>
 #include <vector>
+#include <map>
 #include <z3++.h>
 
+//#include "pkt.h"
 #include "trace.h"
 #include "instructions.h"
 
 using namespace std;
 using namespace z3;
+
+map<string, string> negated_op {
+  {"==", "!="},
+  {"=", "!=" },
+  {"<", ">="},
+  {"<=", ">"},
+  {">", "<="},
+  {">=", "<"}
+};
 
 vector<struct tracenode*> trace::leaf_nodes(struct tracenode *node, vector<struct tracenode*> leaves) {
   //cout << "in leaf nodes size of leaves " << leaves.size() << endl;
@@ -220,6 +232,50 @@ struct tracenode* trace::add_ltree_nodes(struct tracenode *r, vector<struct trac
   return a;
 }
 
+void trace::add_lrtree_nodes(struct tracenode *r, vector<struct tracenode*> tmp, int index, int index2) {
+  cout << "in lrtree nodes with index "<< index  << endl;
+  int n = tmp.size();
+  r->left = new_assert_node(tmp[index]->a, tmp[index]->op, tmp[index]->value);
+  r->right = new_assert_node(tmp[index]->a, negated_op[tmp[index]->op], tmp[index]->value);
+  if (index < n-1)
+    add_lrtree_nodes(r->left, tmp, ++index, index2);
+  else
+    return;
+  cout << " b r tree " << endl;
+  index = index2;
+  if (index < n-1)
+    add_lrtree_nodes(r->right, tmp, ++index, index2);
+  else
+    return;
+}
+
+struct tracenode* trace::lmost_node(struct tracenode *n) {
+  if (n == NULL)
+    return NULL;
+  else if (n->left != NULL)
+    return lmost_node(n->left);
+  else 
+    return n;
+}
+
+void trace::add_mlrite_nodes(struct tracenode *action, vector<struct tracenode* > tmp) {
+  cout << "in mlrite nodes " << endl;
+  vector<struct tracenode*> leaves;
+  leaves = trace::leaf_nodes(root, leaves);
+  cout << " no of leaves in mlrite " << leaves.size() << endl;
+  vector<struct tracenode *>::iterator it;
+  for (it = leaves.begin(); it != leaves.end(); it++) {
+    if ((*it)->a != "DROP" && (*it)->a != "pass") {
+      add_lrtree_nodes((*it), tmp, 0, 0);
+      struct tracenode *ll = lmost_node((*it));
+      if (action != NULL) {
+	ll->left = new_assert_node(action->a, action->op, action->value);
+      }
+    }
+  }
+}
+
+
 void trace::add_mite_node(vector<struct tracenode *> tmp1, vector<struct tracenode *> tmp2, struct tracenode *action) {
   vector<struct tracenode*> leaves;
   leaves = trace::leaf_nodes(root, leaves);
@@ -228,29 +284,13 @@ void trace::add_mite_node(vector<struct tracenode *> tmp1, vector<struct traceno
     if ((*it)->a != "DROP" && (*it)->a != "pass") {
       (*it)->left = new_assert_node(tmp1[0]->a, tmp1[0]->op, tmp1[0]->value);
       (*it)->right = new_assert_node(tmp2[0]->a, tmp2[0]->op, tmp2[0]->value);
-      /*vector<struct tracenode *>::iterator it1 = tmp1.begin();
-      vector<struct tracenode *>::iterator it2 = tmp2.begin();
-      while (it1 != tmp1.end()) {
-	vector<struct tracenode *>::iterator it3 = next(it1);
-	if (*it3 != NULL)
-	  (*it)->left->left = new_assert_node((*it3)->a, (*it3)->op, (*it3)->value);
-	it1++;
-      }
-      it1 = tmp1.end();*/
       tmp1.erase(tmp1.begin());
       tmp2.erase(tmp2.begin());
       struct tracenode *al = add_ltree_nodes((*it)->left, tmp1);
       struct tracenode *ar = add_ltree_nodes((*it)->right, tmp2);
       if (action != NULL) {
-	//cout << action->a << " " << action->op << " " << action->value << endl;
 	al->left = new_assert_node(action->a, action->op, action->value);
       }
-      /*while (it2 != tmp2.end()) {
-	vector<struct tracenode *>::iterator it4 = next(it2);
-	if (*it4 != NULL)
-	  (*it2)->left = new_assert_node((*it4)->a, (*it4)->op, (*it4)->value);
-	it2++;
-      }*/
     }
   }
 }

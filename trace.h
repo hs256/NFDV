@@ -55,7 +55,10 @@ class trace {
   void add_assign_in(string a, int value);
   void add_assert_in(string a, string op, int d);
   struct tracenode *add_ltree_nodes(struct tracenode *r, vector<struct tracenode*> tmp);
+  void add_lrtree_nodes(struct tracenode *r, vector<struct tracenode*> tmp, int index, int index2);
   void add_ite_node(struct tracenode *t1, struct tracenode *t2, struct tracenode *t3);
+  struct tracenode *lmost_node(struct tracenode *n);
+  void add_mlrite_nodes(struct tracenode *action, vector<struct tracenode *> tmp);
   void add_mite_node(vector<struct tracenode *> tmp1, vector<struct tracenode *> tmp2, struct tracenode *action);
   int execute();
   bool is_allocated(string a);
