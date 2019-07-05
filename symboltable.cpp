@@ -109,3 +109,27 @@ void SymbolTable::printST() {
       //cout << endl;
   }
 }
+
+vector<Symbol *> SymbolTable::state_vars() {
+  vector<Symbol *> st_vars;
+  for(int i = 0; i < MAX; i++) {
+    Symbol *start = head[i];
+    //if (start != NULL) {
+    while (start != NULL) {
+      vector<string> gr = start->getGranularity();
+      if (gr.size() == 2) {
+	if (gr[0] == "sip" && gr[1] == "dip") {
+	  //cout << "pushing this in state vars " << start->getName() << endl;
+	  st_vars.push_back(start);
+	}
+      }
+      if (start->next != NULL)
+	start = start->next;
+      else
+	break;
+    }
+  }
+
+  return st_vars;
+}
+

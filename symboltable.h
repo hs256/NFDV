@@ -24,6 +24,7 @@ public:
   string getValuebyName(string name);
   vector<string> getGranularitybyName(string name);
   void printST();
+  vector<Symbol*> state_vars();
 };
 
 #endif
