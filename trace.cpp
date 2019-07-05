@@ -79,8 +79,8 @@ void trace::print_all_paths() {
     for (it2 = path.begin(); it2 != path.end(); it2++) {
       if ((*it2)->decl) {
 	cout << "Allocate(" << (*it2)->a << ")" << endl;
-      //} else if ((*it2)->op == "==") {
-	//cout << "Assign(" << (*it2)->a << ", " << (*it2)->value << ")" << endl;
+      } else if ((*it2)->op == "=") {
+	cout << "Assign(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
       } else if ((*it2)->a == "DROP") {
 	cout << "DROP pkt" << endl;
       } else if ((*it2)->a == "pass") {
@@ -224,13 +224,16 @@ void trace::add_ite_node(struct tracenode *t1, struct tracenode *t2, struct trac
 }
 
 struct tracenode* trace::add_ltree_nodes(struct tracenode *r, vector<struct tracenode *> tmp) {
+  //cout << "action size in ltree nodes " << tmp.size() << endl;
   vector<struct tracenode *>::iterator it;
-  struct tracenode *a = r;
+  //struct tracenode *a = r;
   for (it = tmp.begin(); it != tmp.end(); it++) {
-    a->left = new_assert_node((*it)->a, (*it)->op, (*it)->value);
-    a = a->left;
+    //cout << (*it)->a << " " << (*it)->op << (*it)->value << " in add ltree nodes " << endl;
+    r->left = new_assert_node((*it)->a, (*it)->op, (*it)->value);
+    r = r->left;
+    //a = a->left;
   }
-  return a;
+  return r;
 }
 
 void trace::add_lrtree_nodes(struct tracenode *r, vector<struct tracenode*> tmp, int index, int index2) {
@@ -258,8 +261,8 @@ struct tracenode* trace::lmost_node(struct tracenode *n) {
     return n;
 }
 
-void trace::add_mlrite_nodes(struct tracenode *action, vector<struct tracenode* > tmp) {
-  //cout << "in mlrite nodes " << endl;
+void trace::add_mlrite_nodes(vector<struct tracenode *> action, vector<struct tracenode* > tmp) {
+  //cout << "in mlrite nodes action size " << action.size() << endl;
   vector<struct tracenode*> leaves;
   leaves = trace::leaf_nodes(root, leaves);
   //cout << " no of leaves in mlrite " << leaves.size() << endl;
@@ -268,13 +271,13 @@ void trace::add_mlrite_nodes(struct tracenode *action, vector<struct tracenode* 
     if ((*it)->a != "DROP" && (*it)->a != "pass") {
       add_lrtree_nodes((*it), tmp, 0, 0);
       struct tracenode *ll = lmost_node((*it));
-      if (action != NULL) {
-	ll->left = new_assert_node(action->a, action->op, action->value);
+      if (action.size() > 0) {
+	add_ltree_nodes(ll, action);
+	//ll->left = new_assert_node(action[0]->a, action[0]->op, action[0]->value);
       }
     }
   }
 }
-
 
 void trace::add_mite_node(vector<struct tracenode *> tmp1, vector<struct tracenode *> tmp2, struct tracenode *action) {
   vector<struct tracenode*> leaves;
