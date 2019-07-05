@@ -57,9 +57,10 @@ int main(int argc, const char *argv) {
   for (it = visitor.entries.begin(); it != visitor.entries.end(); it++) {
     vector<struct match_entry_flow*> mef = (*it)->m_f;
     vector<struct match_entry_flow*>::iterator it2;
-    vector<struct tracenode*> tmp1;
+    vector<struct tracenode*> tmp1, tmp3;
     struct action_flow *af = (*it)->a_f;
     struct match_state *ms = (*it)->m_s;
+    struct action_state *as = (*it)->a_s;
     struct tracenode *t3;
     for (it2 = mef.begin(); it2 != mef.end(); it2++) {
       struct match_flow *mf_temp = (*it2)->mf;
@@ -75,12 +76,22 @@ int main(int argc, const char *argv) {
       }
 	tmp1.push_back(t1);
       }
+      if(as != NULL && as->state_var != "") {
+	string stval = as->state_val;
+	string stc = visitor.ST.getValuebyName(stval);
+	int stn = stoi(stc);
+	struct tracenode *tvar = t.new_assert_node(ms->state_var, "=", stn);
+	tmp3.push_back(tvar);
+      }
+
       if(af->action == "DROP")
 	t3 = t.new_assert_node("DROP", "", 0);
       else if(af->action == "pass")
 	t3 = t.new_assert_node("pass", "", 0);
       else
 	t3 = NULL;
+      
+      tmp3.push_back(t3);
       if(ms != NULL && ms->state_var != "") {
 	string stval = ms->state_val;
 	string stc = visitor.ST.getValuebyName(stval);
@@ -89,7 +100,7 @@ int main(int argc, const char *argv) {
 	tmp1.push_back(tvar);
       }
 
-      t.add_mlrite_nodes(t3, tmp1);
+      t.add_mlrite_nodes(tmp3, tmp1);
   }
   t.print_all_paths();
   t.execute();
