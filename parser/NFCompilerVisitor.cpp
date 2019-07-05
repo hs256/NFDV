@@ -172,6 +172,20 @@ void NFCompilerVisitor::print_entries() {
 	//cout << "can't parse match state" << endl;
       }
     }
+
+    if (ctx->match_action()->action_statements()->action_state()) {
+    if (ctx->match_action()->action_statements()->action_state()->statement()->assignment()) {
+      try {
+	antlrcpp::Any a_as = NFCompilerVisitor::visit(ctx->match_action()->action_statements()->action_state()->statement()->assignment());
+	map<string, string> m;
+	m = a_as.as<map<string, string>>();
+	as->state_var = m.begin()->first;
+	as->state_val = m.begin()->second;
+      } catch (bad_cast const& e) {
+      }
+    }
+    }
+
     en->m_f = map_mf;
     en->a_f = af;
     en->m_s = ms;
@@ -242,7 +256,8 @@ void NFCompilerVisitor::print_entries() {
   }
 
    antlrcpp::Any NFCompilerVisitor::visitAssignment(NFCompilerParser::AssignmentContext *ctx)  {
-     if (ctx->expression(0) && ctx->expression(1)) { 
+     //cout << ctx->expression(0)->getText() << " = " << ctx->expression(1)->getText() << " in assignment " << endl;
+     if (ctx->expression(0) && ctx->expression(1)) {
       antlrcpp::Any a1 = NFCompilerVisitor::visit(ctx->expression(0));
       antlrcpp::Any a2 = NFCompilerVisitor::visit(ctx->expression(1));
       string s1, s2;
@@ -266,7 +281,7 @@ void NFCompilerVisitor::print_entries() {
   }
 
    antlrcpp::Any NFCompilerVisitor::visitDouble(NFCompilerParser::DoubleContext *ctx)  {
-     ///cout << ctx->expression(0)->getText() << " " << ctx->op()->getText() << " " << ctx->expression(1)->getText() << " in double context " <<  endl;
+     //cout << ctx->expression(0)->getText() << " " << ctx->op()->getText() << " " << ctx->expression(1)->getText() << " in double context " <<  endl;
      if ((ctx->op()->getText() == "matches" || ctx->op()->getText() == "mismatches") && ctx->expression(0)->getText() == "f") {
        string m = ctx->op()->getText();
        bool match;
