@@ -234,7 +234,7 @@ struct tracenode* trace::add_ltree_nodes(struct tracenode *r, vector<struct trac
 }
 
 void trace::add_lrtree_nodes(struct tracenode *r, vector<struct tracenode*> tmp, int index, int index2) {
-  cout << "in lrtree nodes with index "<< index  << endl;
+  //cout << "in lrtree nodes with index "<< index  << endl;
   int n = tmp.size();
   r->left = new_assert_node(tmp[index]->a, tmp[index]->op, tmp[index]->value);
   r->right = new_assert_node(tmp[index]->a, negated_op[tmp[index]->op], tmp[index]->value);
@@ -242,7 +242,6 @@ void trace::add_lrtree_nodes(struct tracenode *r, vector<struct tracenode*> tmp,
     add_lrtree_nodes(r->left, tmp, ++index, index2);
   else
     return;
-  cout << " b r tree " << endl;
   index = index2;
   if (index < n-1)
     add_lrtree_nodes(r->right, tmp, ++index, index2);
@@ -260,10 +259,10 @@ struct tracenode* trace::lmost_node(struct tracenode *n) {
 }
 
 void trace::add_mlrite_nodes(struct tracenode *action, vector<struct tracenode* > tmp) {
-  cout << "in mlrite nodes " << endl;
+  //cout << "in mlrite nodes " << endl;
   vector<struct tracenode*> leaves;
   leaves = trace::leaf_nodes(root, leaves);
-  cout << " no of leaves in mlrite " << leaves.size() << endl;
+  //cout << " no of leaves in mlrite " << leaves.size() << endl;
   vector<struct tracenode *>::iterator it;
   for (it = leaves.begin(); it != leaves.end(); it++) {
     if ((*it)->a != "DROP" && (*it)->a != "pass") {
