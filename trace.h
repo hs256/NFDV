@@ -66,6 +66,8 @@ class trace {
   struct allocate_in *allocated_sym(string a);
   void print_trace();
   void print_all_paths();
+  void print_path(vector<struct tracenode *> path);
+  vector<vector<struct tracenode *>> return_all_paths();
   vector<vector<struct tracenode *>> get_paths(struct tracenode *node, vector<vector<struct tracenode*>> paths, vector<struct tracenode*> path);
   void destroy_recursive(struct tracenode *node);
 };

@@ -65,6 +65,30 @@ vector<vector<struct tracenode*>> trace::get_paths(struct tracenode *node, vecto
   return paths;
 }
 
+vector<vector <struct tracenode*>> trace::return_all_paths() {
+  vector<vector <struct tracenode* >> paths;
+  vector<struct tracenode *> path;
+  paths = trace::get_paths(root, paths, path);
+  return paths;
+}
+
+void trace::print_path(vector<struct tracenode *> path) {
+  vector <struct tracenode *>::iterator it2;
+  for (it2 = path.begin(); it2 != path.end(); it2++) {
+    if ((*it2)->decl) {
+      cout << "Allocate(" << (*it2)->a << ")" << endl;
+    } else if ((*it2)->op == "=") {
+      cout << "Assign(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
+    } else if ((*it2)->a == "DROP") {
+      cout << "DROP pkt" << endl;
+    } else if ((*it2)->a == "pass") {
+      cout << "Pass pkt" << endl;
+    } else {
+      cout << "Assert(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
+    }
+  }
+}
+
 void trace::print_all_paths() {
   vector<vector <struct tracenode* >> paths;
   vector<struct tracenode *> path;

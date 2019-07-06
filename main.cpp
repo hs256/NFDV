@@ -27,21 +27,9 @@ map<string, string> pkt_fields {
   {"flag_fin", "L4+111"}
 };
 
-
-int main(int argc, const char *argv) {
-  ifstream stream("model2.txt", ios::in);
-
-  ANTLRInputStream input(stream);
-  NFCompilerLexer lexer(&input);
-  CommonTokenStream tokens(&lexer);
-  NFCompilerParser parser(&tokens);
-
-  NFCompilerParser::ProgramContext *nf_name = parser.program();
-  cout << "program name " << nf_name->IDENT()->getText() << endl;
-  NFCompilerVisitor visitor;
-  antlrcpp::Any v = visitor.visitProgram(nf_name);
-  visitor.ST.printST();
-  visitor.print_entries();
+void create_trace(NFCompilerVisitor visitor, int index) {
+  //visitor.ST.printST();
+  //visitor.print_entries();
 
   trace t;
   vector<Symbol *> svt = visitor.ST.state_vars();
@@ -102,10 +90,43 @@ int main(int argc, const char *argv) {
 
       t.add_mlrite_nodes(tmp3, tmp1);
   }
-  t.print_all_paths();
+  //t.print_all_paths();
   t.execute();
-  t.print_all_paths();
+  //t.print_all_paths();
+  vector<vector <struct tracenode *>> paths = t.return_all_paths();
+  vector<vector<struct tracenode *>>::iterator it_path;
+  for (it_path = paths.begin(); it_path != paths.end(); it_path++) {
+    vector<struct tracenode *> path = (*it_path);
+    cout << "PACKET: " << index+1 << endl;
+    t.print_path(path);
+    vector<struct tracenode *>::iterator it_node;
+    for (it_node = path.begin(); it_node != path.end(); it_node++) {
+      if((*it_node)->op == "=") {
+	if (visitor.ST.find((*it_node)->a)) {
+	  visitor.ST.modify((*it_node)->a, to_string((*it_node)->value));
+	}
+      }
+    }
+    if (index < 1) {
+      create_trace(visitor, index+1);
+    }
+  }
+
+}
+
+int main(int argc, const char *argv) {
+  ifstream stream("model2.txt", ios::in);
+
+  ANTLRInputStream input(stream);
+  NFCompilerLexer lexer(&input);
+  CommonTokenStream tokens(&lexer);
+  NFCompilerParser parser(&tokens);
+
+  NFCompilerParser::ProgramContext *nf_name = parser.program();
+  cout << "program name " << nf_name->IDENT()->getText() << endl;
+  NFCompilerVisitor visitor;
+  antlrcpp::Any v = visitor.visitProgram(nf_name);
+  create_trace(visitor, 0);
 
   return 0;
 }
-
