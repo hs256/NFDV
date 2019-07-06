@@ -27,7 +27,7 @@ map<string, string> pkt_fields {
   {"flag_fin", "L4+111"}
 };
 
-void create_trace(NFCompilerVisitor visitor, int index) {
+void create_trace(NFCompilerVisitor visitor, int index, int np) {
   //visitor.ST.printST();
   //visitor.print_entries();
 
@@ -107,15 +107,23 @@ void create_trace(NFCompilerVisitor visitor, int index) {
 	}
       }
     }
-    if (index < 1) {
-      create_trace(visitor, index+1);
+    if (index < np-1) {
+      create_trace(visitor, index+1, np);
     }
   }
 
 }
 
-int main(int argc, const char *argv) {
-  ifstream stream("model2.txt", ios::in);
+int main(int argc, char *argv[]) {
+  char *filename;
+  if (argc > 1) {
+    filename = argv[1];
+  } else {
+    cout << "input filename" << endl;
+    return 0;
+  }
+
+  ifstream stream(filename, ios::in);
 
   ANTLRInputStream input(stream);
   NFCompilerLexer lexer(&input);
@@ -126,7 +134,10 @@ int main(int argc, const char *argv) {
   cout << "program name " << nf_name->IDENT()->getText() << endl;
   NFCompilerVisitor visitor;
   antlrcpp::Any v = visitor.visitProgram(nf_name);
-  create_trace(visitor, 0);
+  int np;
+  cout << " No. of packets: ";
+  cin >> np;
+  create_trace(visitor, 0, np);
 
   return 0;
 }
