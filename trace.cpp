@@ -226,30 +226,25 @@ void trace::add_ite_node(struct tracenode *t1, struct tracenode *t2, struct trac
 struct tracenode* trace::add_ltree_nodes(struct tracenode *r, vector<struct tracenode *> tmp) {
   //cout << "action size in ltree nodes " << tmp.size() << endl;
   vector<struct tracenode *>::iterator it;
-  //struct tracenode *a = r;
   for (it = tmp.begin(); it != tmp.end(); it++) {
     //cout << (*it)->a << " " << (*it)->op << (*it)->value << " in add ltree nodes " << endl;
     r->left = new_assert_node((*it)->a, (*it)->op, (*it)->value);
     r = r->left;
-    //a = a->left;
   }
   return r;
 }
 
-void trace::add_lrtree_nodes(struct tracenode *r, vector<struct tracenode*> tmp, int index, int index2) {
+void trace::add_lrtree_nodes(struct tracenode *r, vector<struct tracenode*> tmp, int index) {
   //cout << "in lrtree nodes with index "<< index  << endl;
   int n = tmp.size();
   r->left = new_assert_node(tmp[index]->a, tmp[index]->op, tmp[index]->value);
   r->right = new_assert_node(tmp[index]->a, negated_op[tmp[index]->op], tmp[index]->value);
+  if (index < n-1) {
+    add_lrtree_nodes(r->left, tmp, index + 1);
+  }
   if (index < n-1)
-    add_lrtree_nodes(r->left, tmp, ++index, index2);
-  else
-    return;
-  index = index2;
-  if (index < n-1)
-    add_lrtree_nodes(r->right, tmp, ++index, index2);
-  else
-    return;
+     add_lrtree_nodes(r->right, tmp, index + 1);
+  return;
 }
 
 struct tracenode* trace::lmost_node(struct tracenode *n) {
@@ -269,7 +264,7 @@ void trace::add_mlrite_nodes(vector<struct tracenode *> action, vector<struct tr
   vector<struct tracenode *>::iterator it;
   for (it = leaves.begin(); it != leaves.end(); it++) {
     if ((*it)->a != "DROP" && (*it)->a != "pass") {
-      add_lrtree_nodes((*it), tmp, 0, 0);
+      add_lrtree_nodes((*it), tmp, 0);
       struct tracenode *ll = lmost_node((*it));
       if (action.size() > 0) {
 	add_ltree_nodes(ll, action);
@@ -480,3 +475,14 @@ PATH:
   }
 }
 
+trace::~trace() {
+  destroy_recursive(root);
+}
+
+void trace::destroy_recursive(struct tracenode *node) {
+  if (node) {
+    destroy_recursive(node->left);
+    destroy_recursive(node->right);
+    delete node;
+  }
+}

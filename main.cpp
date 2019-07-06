@@ -75,7 +75,7 @@ int main(int argc, const char *argv) {
 	t1 = t.new_assert_node(pkt_fields[g[0]], "!=", val);
       }
 	tmp1.push_back(t1);
-      }
+    }
       if(as != NULL && as->state_var != "") {
 	string astval = as->state_val;
 	string astc = visitor.ST.getValuebyName(astval);

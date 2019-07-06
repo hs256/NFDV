@@ -38,6 +38,7 @@ class trace {
   public:
 
   trace();
+  ~trace();
   struct tracenode *add_node(expr e, bool decl);
   vector<struct tracenode*> leaf_nodes(struct tracenode *node, vector<struct tracenode*> leaves); 
   void del_node(struct tracenode *node);
@@ -55,7 +56,7 @@ class trace {
   void add_assign_in(string a, int value);
   void add_assert_in(string a, string op, int d);
   struct tracenode *add_ltree_nodes(struct tracenode *r, vector<struct tracenode*> tmp);
-  void add_lrtree_nodes(struct tracenode *r, vector<struct tracenode*> tmp, int index, int index2);
+  void add_lrtree_nodes(struct tracenode *r, vector<struct tracenode*> tmp, int index);
   void add_ite_node(struct tracenode *t1, struct tracenode *t2, struct tracenode *t3);
   struct tracenode *lmost_node(struct tracenode *n);
   void add_mlrite_nodes(vector<struct tracenode *> action, vector<struct tracenode *> tmp);
@@ -66,6 +67,7 @@ class trace {
   void print_trace();
   void print_all_paths();
   vector<vector<struct tracenode *>> get_paths(struct tracenode *node, vector<vector<struct tracenode*>> paths, vector<struct tracenode*> path);
+  void destroy_recursive(struct tracenode *node);
 };
 
 #endif
