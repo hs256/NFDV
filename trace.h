@@ -17,7 +17,7 @@ struct tracenode {
   string a;
   string op;
   int value;
-  bool decl;
+  int decl; //decl = 1 for declaration node, decl = 2 for assign node, decl = 0 for assert node
   struct tracenode *left, *right;
 };
 
@@ -39,7 +39,7 @@ class trace {
 
   trace();
   ~trace();
-  struct tracenode *add_node(expr e, bool decl);
+  struct tracenode *add_node(expr e, int decl);
   vector<struct tracenode*> leaf_nodes(struct tracenode *node, vector<struct tracenode*> leaves); 
   void del_node(struct tracenode *node);
   struct tracenode *parent_node(struct tracenode *tree, struct tracenode *node);
@@ -47,8 +47,10 @@ class trace {
   int count_allocate_ins();
   int count_assert_ins();
   struct tracenode *new_assert_node(string a, string op, int v);
+  struct tracenode *new_assign_node(string a, string op, int v);
   struct tracenode *new_decl_node(string s);
   void add_assert_node(string s1, string op, int v);
+  void add_assign_node(string s1, string op, int v);
   void add_decl_node(string s);
   //expr get_expr(string a, string op, int value);
   //void add_sym_pkt(char *name);

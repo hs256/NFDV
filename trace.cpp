@@ -75,7 +75,7 @@ vector<vector <struct tracenode*>> trace::return_all_paths() {
 void trace::print_path(vector<struct tracenode *> path) {
   vector <struct tracenode *>::iterator it2;
   for (it2 = path.begin(); it2 != path.end(); it2++) {
-    if ((*it2)->decl) {
+    if ((*it2)->decl == 1) {
       cout << "Allocate(" << (*it2)->a << ")" << endl;
     } else if ((*it2)->op == "=") {
       cout << "Assign(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
@@ -101,7 +101,7 @@ void trace::print_all_paths() {
     //cout << "path len " << path.size() << endl;
     vector <struct tracenode *>::iterator it2;
     for (it2 = path.begin(); it2 != path.end(); it2++) {
-      if ((*it2)->decl) {
+      if ((*it2)->decl == 1) {
 	cout << "Allocate(" << (*it2)->a << ")" << endl;
       } else if ((*it2)->op == "=") {
 	cout << "Assign(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
@@ -180,7 +180,7 @@ struct tracenode* trace::new_decl_node(string a) {
   temp->id = allocate_ins_count++;
   temp->a = a;
   temp->op = "";
-  temp->decl = true;
+  temp->decl = 1;
   temp->value = -1;
   temp->left = NULL;
   temp->right = NULL;
@@ -208,6 +208,18 @@ void trace::add_decl_node(string s) {
 	(*it)->left = new_decl_node(s);
       //cout << "parent id " << (*it)->id << " " << "child id " << temp->id << endl;
     }
+  }
+  return;
+}
+
+
+void trace::add_assign_node(string s1, string op, int value) {
+  vector<struct tracenode*> leaves;
+  leaves = trace::leaf_nodes(root, leaves);
+  vector<struct tracenode*>::iterator it;
+  for (it = leaves.begin(); it != leaves.end(); it++) {
+    if ((*it)->a != "DROP" && (*it)->a != "pass")
+      (*it)->left = new_assign_node(s1, op, value);
   }
   return;
 }
@@ -317,13 +329,24 @@ void trace::add_mite_node(vector<struct tracenode *> tmp1, vector<struct traceno
   }
 }
   
+struct tracenode* trace::new_assign_node(string a, string op, int v) {
+  struct tracenode *temp = new tracenode;
+  temp->id = assert_ins_count++;
+  temp->a = a;
+  temp->op = op;
+  temp->decl = 2;
+  temp->value = v;
+  temp->left = NULL;
+  temp->right = NULL;
+  return temp;
+}
 
 struct tracenode* trace::new_assert_node(string a, string op, int v) {
   struct tracenode *temp = new tracenode;
   temp->id = assert_ins_count++;
   temp->a = a;
   temp->op = op;
-  temp->decl = false;
+  temp->decl = 0;
   temp->value = v;
   temp->left = NULL;
   temp->right = NULL;
@@ -359,7 +382,7 @@ struct allocate_in* trace::allocated_sym(string a) {
 void trace::add_assign_in(string a, int value) {
   
   //cout << "ID: " << t->id << ", assign(" << a << ", " << value << ")" << endl;
-  add_assert_node(a, "==", value);
+  add_assign_node(a, "==", value);
 }
 
 void trace::add_assert_in(string a, string op, int value) {
@@ -430,7 +453,7 @@ PATH:
 	//cout << "null node in path " << endl;
 	goto PATH;
       }
-      if((*it2)->decl) {
+      if((*it2)->decl == 1) {
 	string unique_name = (*it2)->a;
 	const char *name = unique_name.c_str();
 	Z3_sort int_sort = Z3_mk_int_sort(ctx);

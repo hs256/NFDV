@@ -101,7 +101,7 @@ void create_trace(NFCompilerVisitor visitor, int index) {
     t.print_path(path);
     vector<struct tracenode *>::iterator it_node;
     for (it_node = path.begin(); it_node != path.end(); it_node++) {
-      if((*it_node)->op == "=") {
+      if((*it_node)->op == "=" || (*it_node)->decl == 2) {
 	if (visitor.ST.find((*it_node)->a)) {
 	  visitor.ST.modify((*it_node)->a, to_string((*it_node)->value));
 	}
