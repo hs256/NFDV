@@ -349,10 +349,10 @@ trace::trace() {
   cout << "creating symbolic packet" << endl;
   trace::add_allocate_in("L3+0", 4);
   trace::add_allocate_in("L3+72", 8);
-  trace::add_allocate_in("L3+96", 32);
+  /*trace::add_allocate_in("L3+96", 32);
   trace::add_assert_in("L3+96", ">=", 0);
   trace::add_assert_in("L3+96", "<=", 429496);
-  /*trace::add_allocate_in("L3+128", 32);
+  trace::add_allocate_in("L3+128", 32);
   trace::add_assert_in("L3+128", ">=", 0);
   trace::add_assert_in("L3+128", "<=", 4294967296);
   trace::add_allocate_in("L3+64", 8);
@@ -360,10 +360,10 @@ trace::trace() {
   trace::add_allocate_in("L3+16", 16);
   trace::add_allocate_in("L3+4", 4);
   trace::add_allocate_in("L3+80", 16);
-  trace::add_allocate_in("L3+32", 16);*/
+  trace::add_allocate_in("L3+32", 16);
   trace::add_allocate_in("L4+0", 16);
   trace::add_assert_in("L4+0", ">=", 0);
-  trace::add_assert_in("L4+0", "<=", 65536);/*
+  trace::add_assert_in("L4+0", "<=", 65536);
   trace::add_allocate_in("L4+16", 16);
   trace::add_assert_in("L4+16", ">=", 0);
   trace::add_assert_in("L4+16", "<=", 65536);
@@ -379,15 +379,12 @@ trace::trace() {
   trace::add_allocate_in("L4+105", 1);
   trace::add_assign_in("L4+105", 0);
   trace::add_allocate_in("L4+106", 1);
-  trace::add_assign_in("L4+106", 0);
+  trace::add_assign_in("L4+106", 0);*/
   trace::add_allocate_in("L4+107", 1);
-  trace::add_assign_in("L4+107", 0);
   trace::add_allocate_in("L4+108", 1);
-  trace::add_assign_in("L4+108", 0);
   trace::add_allocate_in("L4+109", 1);
-  trace::add_assign_in("L4+109", 0);
   trace::add_allocate_in("L4+110", 1);
-  trace::add_allocate_in("L4+111", 1);*/
+  trace::add_allocate_in("L4+111", 1);
 
 }
 

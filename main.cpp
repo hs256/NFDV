@@ -80,7 +80,7 @@ int main(int argc, const char *argv) {
 	string astval = as->state_val;
 	string astc = visitor.ST.getValuebyName(astval);
 	int astn = stoi(astc);
-	struct tracenode *astvar = t.new_assert_node(as->state_var, "==", astn);
+	struct tracenode *astvar = t.new_assert_node(as->state_var, "=", astn);
 	tmp3.push_back(astvar);
       }
 
