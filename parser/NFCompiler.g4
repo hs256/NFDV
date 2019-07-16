@@ -75,7 +75,7 @@ type  :   BASIC_TYPE	#dec_basic
 ;
 
 condition  :
-	expression
+	(expression) SEMICOLON (expression)*
 ;
 
 statement  :

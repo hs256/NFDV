@@ -54,8 +54,8 @@ void NFCompilerVisitor::print_entries() {
     antlrcpp::Any NFCompilerVisitor::visitDeclare_entry(NFCompilerParser::Declare_entryContext *context) {
       std::string type = context->type()->getText();
       if (type == "rule") {
-	antlrcpp::Any a = NFCompilerVisitor::visit(context->expression(0));
 	try {
+	antlrcpp::Any a = NFCompilerVisitor::visit(context->expression(0));
 	map<string, string> m;
 	m = a.as<map<string, string>>();
 	vector<string> v_f;
@@ -114,7 +114,7 @@ void NFCompilerVisitor::print_entries() {
     if (ctx->match_action()->match_flow() != NULL) {
       try {
 	//cout << "one expression in match_flow " << endl;
-	antlrcpp::Any a_mf = NFCompilerVisitor::visit(ctx->match_action()->match_flow()->condition()->expression());
+	antlrcpp::Any a_mf = NFCompilerVisitor::visit(ctx->match_action()->match_flow()->condition()->expression(0));
 	map<bool, string> m;
 	m = a_mf.as<map<bool, string>>();
 	mf->match = m.begin()->first;
@@ -126,7 +126,7 @@ void NFCompilerVisitor::print_entries() {
       } catch (bad_cast const& e) {
 	//cout << "unable to get map match flow " << endl;
 	try {
-	  antlrcpp::Any a_map_mf = NFCompilerVisitor::visit(ctx->match_action()->match_flow()->condition()->expression());
+	  antlrcpp::Any a_map_mf = NFCompilerVisitor::visit(ctx->match_action()->match_flow()->condition()->expression(0));
 	  map_mf = a_map_mf.as<vector<struct match_entry_flow *>>();
 	  //cout << map_mf.size() << "map mf size in visit entry " << endl;
 	} catch (bad_cast const &e) {
@@ -160,7 +160,7 @@ void NFCompilerVisitor::print_entries() {
     }
 
     if (ctx->match_action()->match_state()) {
-      antlrcpp::Any a3 = NFCompilerVisitor::visit(ctx->match_action()->match_state()->condition()->expression());
+      antlrcpp::Any a3 = NFCompilerVisitor::visit(ctx->match_action()->match_state()->condition()->expression(0));
       try {
 	vector<string> t_m;
 	t_m = a3.as<vector<string>>();
