@@ -67,9 +67,11 @@ string CTTable::getc2byName(string name) {
   return s->getc2();
 }
 
-string CTTable::getcvalbyName(string name) {
+int CTTable::getcvalbyName(string name) {
   Constraint *s = find(name);
-  return s->getcval();
+  string val = s->getcval();
+  int c = stoi(val);
+  return c;
 }
 
 string CTTable::getop1byName(string name) {

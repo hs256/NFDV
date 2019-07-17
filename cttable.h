@@ -22,7 +22,7 @@ public:
   string getc2byName(string name);
   string getop1byName(string name);
   string getop2byName(string name);
-  string getcvalbyName(string name);
+  int getcvalbyName(string name);
   void printCT();
 };
   

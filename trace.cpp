@@ -77,6 +77,8 @@ void trace::print_path(vector<struct tracenode *> path) {
   for (it2 = path.begin(); it2 != path.end(); it2++) {
     if ((*it2)->decl == 1) {
       cout << "Allocate(" << (*it2)->a << ")" << endl;
+    } else if ((*it2)->decl == 3) {
+      cout << "Assert(" << (*it2)->a << " " << (*it2)->op2 << " " << (*it2)->b << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
     } else if ((*it2)->op == "=") {
       cout << "Assign(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
     } else if ((*it2)->a == "DROP") {
@@ -175,6 +177,21 @@ bool trace::compare_nodes(struct tracenode *t1, struct tracenode *t2) {
   return false;
 }
 
+struct tracenode* trace::new_ct_node(string a1, string op1, string a2, string op2, int val) {
+  //cout << "new ct node " << a1 << " " << op1 << " " << a2 << endl;
+  struct tracenode *temp = new tracenode;
+  temp->id = assert_ins_count++;
+  temp->a = a1;
+  temp->op = op2;
+  temp->decl = 3;
+  temp->value = val;
+  temp->b = a2;
+  temp->op2 = op1;
+  temp->left = NULL;
+  temp->right = NULL;
+  return temp;
+}
+
 struct tracenode* trace::new_decl_node(string a) {
   struct tracenode *temp = new tracenode;
   temp->id = allocate_ins_count++;
@@ -184,15 +201,11 @@ struct tracenode* trace::new_decl_node(string a) {
   temp->value = -1;
   temp->left = NULL;
   temp->right = NULL;
+  temp->b = "";
+  temp->op2 = "";
   return temp;
 }
 void trace::add_decl_node(string s) {
-  /*struct tracenode *temp = new tracenode;
-  temp->a = s;
-  temp->decl = true;
-  temp->left = temp->right = NULL;
-  temp->op = "";
-  temp->value = -1;*/
   vector<struct tracenode*> leaves;
   leaves = leaf_nodes(root, leaves);
   if (leaves.size() == 0) {
@@ -225,13 +238,6 @@ void trace::add_assign_node(string s1, string op, int value) {
 }
 
 void trace::add_assert_node(string s1, string op, int value) {
-  //cout << "in assert node" << endl;
-  /*struct tracenode *temp = new tracenode;
-  temp->a = s1;
-  temp->decl = false;
-  temp->op = op;
-  temp->value = value;
-  temp->left = temp->right = NULL;*/
   vector<struct tracenode*> leaves;
   leaves = trace::leaf_nodes(root, leaves);
   vector<struct tracenode*>::iterator it;
@@ -273,8 +279,13 @@ struct tracenode* trace::add_ltree_nodes(struct tracenode *r, vector<struct trac
 void trace::add_lrtree_nodes(struct tracenode *r, vector<struct tracenode*> tmp, int index) {
   //cout << "in lrtree nodes with index "<< index  << endl;
   int n = tmp.size();
-  r->left = new_assert_node(tmp[index]->a, tmp[index]->op, tmp[index]->value);
-  r->right = new_assert_node(tmp[index]->a, negated_op[tmp[index]->op], tmp[index]->value);
+  if (tmp[index]->decl == 0) {
+    r->left = new_assert_node(tmp[index]->a, tmp[index]->op, tmp[index]->value);
+    r->right = new_assert_node(tmp[index]->a, negated_op[tmp[index]->op], tmp[index]->value);
+  } else if (tmp[index]->decl == 3) {
+    r->left = new_ct_node(tmp[index]->a, tmp[index]->op2, tmp[index]->b, tmp[index]->op, tmp[index]->value);
+    r->right = new_ct_node(tmp[index]->a, tmp[index]->op2, tmp[index]->b, negated_op[tmp[index]->op], tmp[index]->value);
+  }
   if (index < n-1) {
     add_lrtree_nodes(r->left, tmp, index + 1);
   }
@@ -336,6 +347,8 @@ struct tracenode* trace::new_assign_node(string a, string op, int v) {
   temp->op = op;
   temp->decl = 2;
   temp->value = v;
+  temp->b = "";
+  temp->op2 = "";
   temp->left = NULL;
   temp->right = NULL;
   return temp;
@@ -348,6 +361,8 @@ struct tracenode* trace::new_assert_node(string a, string op, int v) {
   temp->op = op;
   temp->decl = 0;
   temp->value = v;
+  temp->b = "";
+  temp->op2 = "";
   temp->left = NULL;
   temp->right = NULL;
   return temp;

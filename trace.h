@@ -17,6 +17,8 @@ struct tracenode {
   string a;
   string op;
   int value;
+  string op2;
+  string b;
   int decl; //decl = 1 for declaration node, decl = 2 for assign node, decl = 0 for assert node
   struct tracenode *left, *right;
 };
@@ -49,6 +51,7 @@ class trace {
   struct tracenode *new_assert_node(string a, string op, int v);
   struct tracenode *new_assign_node(string a, string op, int v);
   struct tracenode *new_decl_node(string s);
+  struct tracenode *new_ct_node(string a1, string op1, string a2, string op2, int val);
   void add_assert_node(string s1, string op, int v);
   void add_assign_node(string s1, string op, int v);
   void add_decl_node(string s);
