@@ -383,10 +383,14 @@ void NFCompilerVisitor::print_entries() {
 	  }
 	} else if (ctx->op()->getText() == "-") {
 	  string op1 = ctx->op()->getText();
-	  string c1 = ctx->expression(0)->getText();
-	  string c2 = ctx->expression(1)->getText();
 	  vector<string> cn;
-	  cn.push_back(c1);
+	  try {
+	    antlrcpp::Any ac1 = NFCompilerVisitor::visit(ctx->expression(0));
+	    string c1 = ac1.as<string>();
+	    cn.push_back(c1);
+	  } catch (bad_cast const &e) {
+	  }
+	  string c2 = ctx->expression(1)->getText();
 	  cn.push_back(op1);
 	  cn.push_back(c2);
 	  antlrcpp::Any tempn(cn);

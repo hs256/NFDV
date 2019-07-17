@@ -165,7 +165,7 @@ RULE : 'rule' ;
 FIELD : 'sip' | 'dip' | 'UDP' | 'proto'
 	| 'sport' | 'dport' | 'payload' | 'flag_syn' | 'flag_fin' | 'flag_ack'
 	| 'flag_rst' | 'seq_no' | 'ack_no'
-	| 'tag' | 'iplen' ;
+	| 'tag' | 'iplen' | 'Tsval' ;
 ACTION: 'DROP' ;
 ENTRY : 'entry' ;
 PASS  : 'pass' ;
