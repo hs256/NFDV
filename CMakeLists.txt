@@ -36,6 +36,8 @@ set(antlr4_SRC
   ${PROJECT_SOURCE_DIR}/symboltable.cpp
   ${PROJECT_SOURCE_DIR}/instructions.cpp
   ${PROJECT_SOURCE_DIR}/trace.cpp
+  ${PROJECT_SOURCE_DIR}/constraint.cpp
+  ${PROJECT_SOURCE_DIR}/cttable.cpp
   ${antlr4-GENERATED_SRC}
 )
 

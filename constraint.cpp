@@ -4,13 +4,13 @@
 
 using namespace std;
 
-Constraint::Constraint(string n, string c1, string op1, string c2, string op2, string c3) {
+Constraint::Constraint(string n, string c01, string op01, string c02, string op02, string c03) {
   name = n;
-  c1 = c1;
-  op1 = op1;
-  c2 = c2;
-  op2 = op2;
-  cval = c3;
+  c1 = c01;
+  op1 = op01;
+  c2 = c02;
+  op2 = op02;
+  cval = c03;
   next = NULL;
 }
 

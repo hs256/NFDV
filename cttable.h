@@ -8,10 +8,10 @@
 
 using namespace std;
 
-const int MAX = 100;
+const int MAX2 = 100;
 
 class CTTable {
-  Constraint *head[MAX];
+  Constraint *head[MAX2];
 
 public:
   CTTable();

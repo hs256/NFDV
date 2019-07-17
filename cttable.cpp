@@ -4,7 +4,7 @@
 using namespace std;
 
 CTTable::CTTable() {
-  for(int i = 0; i <MAX; i++) {
+  for(int i = 0; i <MAX2; i++) {
     head[i] = NULL;
   }
 }
@@ -83,7 +83,7 @@ string CTTable::getop2byName(string name) {
 }
 
 void CTTable::printCT() {
-  for(int i = 0; i < MAX; i++) {
+  for(int i = 0; i < MAX2; i++) {
     Constraint *start = head[i];
     //if (start != NULL) {
     while (start != NULL) {
