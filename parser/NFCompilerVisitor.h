@@ -12,6 +12,7 @@
 #include "NFCompilerParser.h"
 #include "../symboltable.h"
 #include "../entry.h"
+#include "../cttable.h"
 
 
 /**
@@ -21,6 +22,7 @@
 class  NFCompilerVisitor : public antlr4::tree::AbstractParseTreeVisitor {
 public:
   SymbolTable ST;
+  CTTable CT;
   //multimap<struct match_flow*, struct action_flow*, struct match_state*, struct action_state*> entry; 
   vector<struct entry*> entries;
   void print_entries();

@@ -28,9 +28,6 @@ map<string, string> pkt_fields {
 };
 
 void create_trace(NFCompilerVisitor visitor, int index, int np) {
-  //visitor.ST.printST();
-  //visitor.print_entries();
-
   trace t;
   vector<Symbol *> svt = visitor.ST.state_vars();
   vector<Symbol *>::iterator its;
@@ -134,6 +131,10 @@ int main(int argc, char *argv[]) {
   cout << "program name " << nf_name->IDENT()->getText() << endl;
   NFCompilerVisitor visitor;
   antlrcpp::Any v = visitor.visitProgram(nf_name);
+  //visitor.ST.printST();
+  //visitor.print_entries();
+  visitor.CT.printCT();
+
   int np;
   cout << " No. of packets: ";
   cin >> np;

@@ -63,7 +63,16 @@ void NFCompilerVisitor::print_entries() {
 	NFCompilerVisitor::ST.add(context->IDENT()->getText(),type, type, m.begin()->second, v_f);
 	//cout << context->IDENT()->getText() << " " << m.begin()->first << " " << m.begin()->second << endl;
 	} catch (bad_cast const& e) {
-	}
+	    try {
+	      antlrcpp::Any a = NFCompilerVisitor::visit(context->expression(0));
+	      vector<string> m;
+	      m = a.as<vector<string>>();
+	      //cout << m[0] << " " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << endl;
+	      if (m.size() == 5)
+		NFCompilerVisitor::CT.add(context->IDENT()->getText(), m[0], m[1], m[2], m[3], m[4]);
+	    } catch (bad_cast const& e) {
+	    }
+	  }
       } else if (type == "int") {
 	if (context->ASSIGN() != NULL && context->expression().size() == 1) {
 	  antlrcpp::Any a1 = NFCompilerVisitor::visit(context->expression(0));
@@ -359,6 +368,29 @@ void NFCompilerVisitor::print_entries() {
 	  s12.push_back(s2);
 	  antlrcpp::Any temp12(s12);
 	  return temp12;
+      } else if (ctx->op()->getText() == "<=") {
+	  string op2 = ctx->op()->getText();
+	  string cval = ctx->expression(1)->getText();
+	  try {
+	    antlrcpp::Any an = NFCompilerVisitor::visit(ctx->expression(0));
+	    vector<string> ci;
+	    ci = an.as<vector<string>>();
+	    ci.push_back(op2);
+	    ci.push_back(cval);
+	    antlrcpp::Any tempi(ci);
+	    return tempi;
+	  } catch (bad_cast const& e) {
+	  }
+	} else if (ctx->op()->getText() == "-") {
+	  string op1 = ctx->op()->getText();
+	  string c1 = ctx->expression(0)->getText();
+	  string c2 = ctx->expression(1)->getText();
+	  vector<string> cn;
+	  cn.push_back(c1);
+	  cn.push_back(op1);
+	  cn.push_back(c2);
+	  antlrcpp::Any tempn(cn);
+	  return cn;
 	}
 	
     return visitChildren(ctx);

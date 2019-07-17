@@ -427,11 +427,12 @@ trace::trace() {
   trace::add_assign_in("L4+105", 0);
   trace::add_allocate_in("L4+106", 1);
   trace::add_assign_in("L4+106", 0);*/
-  trace::add_allocate_in("L4+107", 1);
-  trace::add_allocate_in("L4+108", 1);
-  trace::add_allocate_in("L4+109", 1);
+  //trace::add_allocate_in("L4+107", 1);
+  //trace::add_allocate_in("L4+108", 1);
+  //trace::add_allocate_in("L4+109", 1);
   trace::add_allocate_in("L4+110", 1);
-  trace::add_allocate_in("L4+111", 1);
+  trace::add_allocate_in("Tsval", 1);
+  //trace::add_allocate_in("L4+111", 1);
 
 }
 
