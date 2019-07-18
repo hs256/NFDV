@@ -35,7 +35,8 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
     string stvar = (*its)->getName();
     t.add_decl_node(stvar);
     string stval = (*its)->getValue();
-    t.add_assign_in(stvar, stoi(stval));
+    if(stval != "")
+      t.add_assign_in(stvar, stoi(stval));
   }
 
   vector<struct entry*>::iterator it;
@@ -45,29 +46,44 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
     vector<struct tracenode*> tmp1, tmp3;
     struct action_flow *af = (*it)->a_f;
     struct match_state *ms = (*it)->m_s;
-    struct action_state *as = (*it)->a_s;
+    vector<struct action_state *> asv = ((*it)->a_s);
+    vector<struct action_state *>::iterator itas;
     struct tracenode *t3;
     for (it2 = mef.begin(); it2 != mef.end(); it2++) {
       struct match_flow *mf_temp = (*it2)->mf;
       string v = mf_temp->var;
-      vector<string> g = visitor.ST.getGranularitybyName(v);
-      string c = visitor.ST.getValuebyName(v);
-      int val = stoi(c);
-      struct tracenode *t1;
-      if (mf_temp->match) {
-	t1 = t.new_assert_node(pkt_fields[g[0]], "==", val);
-      } else {
-	t1 = t.new_assert_node(pkt_fields[g[0]], "!=", val);
-      }
+      if (visitor.ST.find(v) != NULL) {
+	vector<string> g = visitor.ST.getGranularitybyName(v);
+	string c = visitor.ST.getValuebyName(v);
+	int val = stoi(c);
+	struct tracenode *t1;
+	if (mf_temp->match) {
+	  t1 = t.new_assert_node(pkt_fields[g[0]], "==", val);
+	} else {
+	  t1 = t.new_assert_node(pkt_fields[g[0]], "!=", val);
+	}
+	  tmp1.push_back(t1);
+      } else if (visitor.CT.find(v) != NULL) {
+	struct tracenode *t1 = t.new_ct_node(visitor.CT.getc1byName(v), visitor.CT.getop1byName(v), visitor.CT.getc2byName(v), visitor.CT.getop2byName(v), visitor.CT.getcvalbyName(v));
 	tmp1.push_back(t1);
-    }
-      if(as != NULL && as->state_var != "") {
-	string astval = as->state_val;
-	string astc = visitor.ST.getValuebyName(astval);
-	int astn = stoi(astc);
-	struct tracenode *astvar = t.new_assert_node(as->state_var, "=", astn);
-	tmp3.push_back(astvar);
       }
+    }
+
+    for (itas = asv.begin(); itas != asv.end(); itas++) {
+	  struct action_state *as = (*itas);
+	  if(as != NULL && as->state_var != "") {
+	    string astval = as->state_val;
+	    if (visitor.ST.find(astval) != NULL) {
+	      string astc = visitor.ST.getValuebyName(astval);
+	      int astn = stoi(astc);
+	      struct tracenode *astvar = t.new_assert_node(as->state_var, "=", astn);
+	      tmp3.push_back(astvar);
+	    } else if (astval != "") {
+	      struct tracenode *astn = t.new_ct_node(as->state_var, "", astval, "=", 0);
+	      tmp3.push_back(astn);
+	    }
+	  }
+    }
 
       if(af->action == "DROP")
 	t3 = t.new_assert_node("DROP", "", 0);
@@ -79,10 +95,12 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
       tmp3.push_back(t3);
       if(ms != NULL && ms->state_var != "") {
 	string stval = ms->state_val;
-	string stc = visitor.ST.getValuebyName(stval);
-	int stn = stoi(stc);
-	struct tracenode *tvar = t.new_assert_node(ms->state_var, "==", stn);
-	tmp1.push_back(tvar);
+	if (visitor.ST.find(stval) != NULL) {
+	  string stc = visitor.ST.getValuebyName(stval);
+	  int stn = stoi(stc);
+	  struct tracenode *tvar = t.new_assert_node(ms->state_var, "==", stn);
+	  tmp1.push_back(tvar);
+	}
       }
 
       t.add_mlrite_nodes(tmp3, tmp1);
@@ -128,12 +146,12 @@ int main(int argc, char *argv[]) {
   NFCompilerParser parser(&tokens);
 
   NFCompilerParser::ProgramContext *nf_name = parser.program();
-  cout << "program name " << nf_name->IDENT()->getText() << endl;
+  //cout << "program name " << nf_name->IDENT()->getText() << endl;
   NFCompilerVisitor visitor;
   antlrcpp::Any v = visitor.visitProgram(nf_name);
   //visitor.ST.printST();
   //visitor.print_entries();
-  visitor.CT.printCT();
+  //visitor.CT.printCT();
 
   int np;
   cout << " No. of packets: ";

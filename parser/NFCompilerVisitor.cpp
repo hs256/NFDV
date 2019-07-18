@@ -103,6 +103,14 @@ void NFCompilerVisitor::print_entries() {
 	    }
 	  } catch (bad_cast const& e) {
 	  }
+	} else if (context->ASSIGN() == NULL && context->expression().size() == 1) {
+	  try {
+	    antlrcpp::Any a = NFCompilerVisitor::visit(context->expression(0));
+	    vector<string> m0;
+	    m0 = a.as<vector<string>>();
+	    NFCompilerVisitor::ST.add(context->IDENT()->getText(), type, type, "", m0);
+	  } catch (bad_cast const& e) {
+	  }
 	}
       }
 
@@ -117,9 +125,9 @@ void NFCompilerVisitor::print_entries() {
     struct match_flow *mf = new match_flow;
     struct action_flow *af = new action_flow;
     struct match_state *ms = new match_state;
-    struct action_state *as = new action_state;
     struct entry *en = new entry;
     vector<struct match_entry_flow *> map_mf;
+    vector<struct action_state *> asv;
     if (ctx->match_action()->match_flow() != NULL) {
       try {
 	//cout << "one expression in match_flow " << endl;
@@ -185,11 +193,22 @@ void NFCompilerVisitor::print_entries() {
     if (ctx->match_action()->action_statements()->action_state()) {
     if (ctx->match_action()->action_statements()->action_state()->statement()->assignment()) {
       try {
+	struct action_state *as = new action_state;
 	antlrcpp::Any a_as = NFCompilerVisitor::visit(ctx->match_action()->action_statements()->action_state()->statement()->assignment());
 	map<string, string> m;
 	m = a_as.as<map<string, string>>();
 	as->state_var = m.begin()->first;
 	as->state_val = m.begin()->second;
+	asv.push_back(as);
+	if (ctx->match_action()->action_statements()->action_state()->statement()->statement().size() > 0) {
+	  struct action_state *as2 = new action_state;
+	  antlrcpp::Any a_as2 = NFCompilerVisitor::visit(ctx->match_action()->action_statements()->action_state()->statement()->statement(0)->assignment());
+	  map<string, string> m2;
+	  m2 = a_as2.as<map<string, string>>();
+	  as2->state_var = m2.begin()->first;
+	  as2->state_val = m2.begin()->second;
+	  asv.push_back(as2);
+	}
       } catch (bad_cast const& e) {
       }
     }
@@ -198,7 +217,7 @@ void NFCompilerVisitor::print_entries() {
     en->m_f = map_mf;
     en->a_f = af;
     en->m_s = ms;
-    en->a_s = as;
+    en->a_s = asv;
     //NFCompilerVisitor::entry_flow.insert(pair<struct match_flow*, struct action_flow*>(mf, af));  
     NFCompilerVisitor::entries.push_back(en);
     return visitChildren(ctx);
