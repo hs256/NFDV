@@ -55,10 +55,12 @@ class trace {
   void add_assert_node(string s1, string op, int v);
   void add_assign_node(string s1, string op, int v);
   void add_decl_node(string s);
+  void add_ct_node(string a1, string op1, string a2, string op2, int val);
   //expr get_expr(string a, string op, int value);
   //void add_sym_pkt(char *name);
   void add_allocate_in(string a, int size);
   void add_assign_in(string a, int value);
+  void add_ct_in(string a1, string op1, string a2, string op2, int val);
   void add_assert_in(string a, string op, int d);
   struct tracenode *add_ltree_nodes(struct tracenode *r, vector<struct tracenode*> tmp);
   void add_lrtree_nodes(struct tracenode *r, vector<struct tracenode*> tmp, int index);

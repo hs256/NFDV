@@ -245,6 +245,17 @@ void trace::add_assign_node(string s1, string op, int value) {
   return;
 }
 
+void trace::add_ct_node(string a1, string op1, string a2, string op2, int value) {
+  vector<struct tracenode*> leaves;
+  leaves = trace::leaf_nodes(root, leaves);
+  vector<struct tracenode*>::iterator it;
+  for (it = leaves.begin(); it != leaves.end(); it++) {
+    if ((*it)->a != "DROP" && (*it)->a != "pass")
+      (*it)->left = new_ct_node(a1, op1, a2, op2, value);
+  }
+  return;
+}
+
 void trace::add_assert_node(string s1, string op, int value) {
   vector<struct tracenode*> leaves;
   leaves = trace::leaf_nodes(root, leaves);
@@ -559,6 +570,14 @@ PATH:
 	      s.add(eq2);
 	      if (s.check() == unsat) {
 		cout << "unsat" << endl;
+		del_node((*it2));
+		goto PATH;
+	      }
+	    } else if ((*it2)->op == "=" && (*it2)->op2 == "") {
+	      expr eq2 = (*decl_it1) == (*decl_it2);
+	      s.add(eq2);
+	      if (s.check() == unsat) {
+		cout << "unsat " << endl;
 		del_node((*it2));
 		goto PATH;
 	      }

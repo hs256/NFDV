@@ -35,8 +35,14 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
     string stvar = (*its)->getName();
     t.add_decl_node(stvar);
     string stval = (*its)->getValue();
-    if(stval != "")
-      t.add_assign_in(stvar, stoi(stval));
+    if(stval != "") {
+      try {
+	int stvalc = stoi(stval);
+	t.add_assign_in(stvar, stvalc);
+      } catch (const invalid_argument& ia) {
+	t.add_ct_node(stvar, "", stval, "=", 0); 
+      }
+    }
   }
 
   vector<struct entry*>::iterator it;
@@ -118,7 +124,12 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
     for (it_node = path.begin(); it_node != path.end(); it_node++) {
       if((*it_node)->op == "=" || (*it_node)->decl == 2) {
 	if (visitor.ST.find((*it_node)->a)) {
-	  visitor.ST.modify((*it_node)->a, to_string((*it_node)->value));
+	  if ((*it_node)->b == "") {
+	    visitor.ST.modify((*it_node)->a, to_string((*it_node)->value));
+	  } else {
+	    string new_val = (*it_node)->b + to_string(index+1);
+	    visitor.ST.modify((*it_node)->a, new_val);
+	  }
 	}
       }
     }
