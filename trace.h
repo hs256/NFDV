@@ -39,7 +39,7 @@ class trace {
 
   public:
 
-  trace();
+  trace(int index);
   ~trace();
   struct tracenode *add_node(expr e, int decl);
   vector<struct tracenode*> leaf_nodes(struct tracenode *node, vector<struct tracenode*> leaves); 

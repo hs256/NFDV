@@ -28,7 +28,7 @@ map<string, string> pkt_fields {
 };
 
 void create_trace(NFCompilerVisitor visitor, int index, int np) {
-  trace t;
+  trace t(index+1);
   vector<Symbol *> svt = visitor.ST.state_vars();
   vector<Symbol *>::iterator its;
   for (its = svt.begin(); its != svt.end(); its++) {
@@ -70,7 +70,7 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 	}
 	  tmp1.push_back(t1);
       } else if (visitor.CT.find(v) != NULL) {
-	struct tracenode *t1 = t.new_ct_node(visitor.CT.getc1byName(v), visitor.CT.getop1byName(v), visitor.CT.getc2byName(v), visitor.CT.getop2byName(v), visitor.CT.getcvalbyName(v));
+	struct tracenode *t1 = t.new_ct_node(visitor.CT.getc1byName(v) + to_string(index+1), visitor.CT.getop1byName(v), visitor.CT.getc2byName(v), visitor.CT.getop2byName(v), visitor.CT.getcvalbyName(v));
 	tmp1.push_back(t1);
       }
     }
@@ -85,7 +85,8 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 	      struct tracenode *astvar = t.new_assert_node(as->state_var, "=", astn);
 	      tmp3.push_back(astvar);
 	    } else if (astval != "") {
-	      struct tracenode *astn = t.new_ct_node(as->state_var, "", astval, "=", 0);
+	      string astval_n = astval + to_string(index+1);
+	      struct tracenode *astn = t.new_ct_node(as->state_var, "", astval_n, "=", 0);
 	      tmp3.push_back(astn);
 	    }
 	  }
@@ -127,7 +128,8 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 	  if ((*it_node)->b == "") {
 	    visitor.ST.modify((*it_node)->a, to_string((*it_node)->value));
 	  } else {
-	    string new_val = (*it_node)->b + to_string(index+1);
+	    //string new_val = (*it_node)->b + to_string(index+1);
+	    string new_val = (*it_node)->b;
 	    visitor.ST.modify((*it_node)->a, new_val);
 	  }
 	}
