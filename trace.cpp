@@ -78,9 +78,17 @@ void trace::print_path(vector<struct tracenode *> path) {
     if ((*it2)->decl == 1) {
       cout << "Allocate(" << (*it2)->a << ")" << endl;
     } else if ((*it2)->decl == 3) {
-      cout << "Assert(" << (*it2)->a << " " << (*it2)->op2 << " " << (*it2)->b << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
+      if ((*it2)->op2 != "")
+	cout << "Assert(" << (*it2)->a << " " << (*it2)->op2 << " " << (*it2)->b << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
+      else if ((*it2)->op == "=")
+	cout << "Assign(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->b << ")" << endl;
     } else if ((*it2)->op == "=") {
-      cout << "Assign(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
+      if ((*it2)->b == "")
+	cout << "Assign(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
+      else
+	cout << "Assign(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->b << ")" << endl;
+    //} else if ((*it2)->op == "=" && (*it2)->b != "") {
+     // cout << "Asiign(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->b << ")" << endl;
     } else if ((*it2)->a == "DROP") {
       cout << "DROP pkt" << endl;
     } else if ((*it2)->a == "pass") {
@@ -269,8 +277,11 @@ struct tracenode* trace::add_ltree_nodes(struct tracenode *r, vector<struct trac
   //cout << "action size in ltree nodes " << tmp.size() << endl;
   vector<struct tracenode *>::iterator it;
   for (it = tmp.begin(); it != tmp.end(); it++) {
-    //cout << (*it)->a << " " << (*it)->op << (*it)->value << " in add ltree nodes " << endl;
-    r->left = new_assert_node((*it)->a, (*it)->op, (*it)->value);
+    //cout << (*it)->a << " " << (*it)->op << (*it)->b << " in add ltree nodes " << endl;
+    if ((*it)->b == "")
+      r->left = new_assert_node((*it)->a, (*it)->op, (*it)->value);
+    else
+      r->left = new_ct_node((*it)->a, "", (*it)->b, (*it)->op, 0); 
     r = r->left;
   }
   return r;
@@ -477,7 +488,7 @@ PATH:
 	Z3_ast x = Z3_mk_const(ctx, s, int_sort);
 	expr eq(ctx, x);
 	decl_exprs.push_back(eq);
-      } else {
+      } else if ((*it2)->decl == 0 || (*it2)->decl == 2) {
 	vector<expr>::iterator decl_it;
 	for (decl_it = decl_exprs.begin(); decl_it != decl_exprs.end(); decl_it++) {
 	  if ((*decl_it).decl().name().str() == (*it2)->a) {
@@ -529,7 +540,34 @@ PATH:
 	    }
 	  }
 	}
+      } else if ((*it2)->decl == 3) {
+	vector<expr>::iterator decl_it1;
+	vector<expr>::iterator decl_it2;
+	for (decl_it1 = decl_exprs.begin(); decl_it1 != decl_exprs.end(); decl_it1++) {
+	  for (decl_it2 = decl_exprs.begin(); decl_it2 != decl_exprs.end(); decl_it2++) {
+	  if ((*decl_it1).decl().name().str() == (*it2)->a && (*decl_it2).decl().name().str() == (*it2)->b) {
+	    if ((*it2)->op == "<=" && (*it2)->op2 == "-") {
+	      expr eq2 = (*decl_it1) - (*decl_it2) <=  (*it2)->value;
+	      s.add(eq2);
+	      if (s.check() == unsat) {
+		cout << "unsat" << endl;
+		del_node((*it2));
+		goto PATH;
+	      }
+	    } else if ((*it2)->op == ">" && (*it2)->op2 == "-") {
+	      expr eq2 = (*decl_it1) - (*decl_it2) >  (*it2)->value;
+	      s.add(eq2);
+	      if (s.check() == unsat) {
+		cout << "unsat" << endl;
+		del_node((*it2));
+		goto PATH;
+	      }
+	    }
+	  }
+	}
+	}
       }
+
     }
     //cout << s.check() << endl;
   }
