@@ -1,15 +1,5 @@
 program pan {
-  int TCP_STATE_NONE = 0;
-  int TCP_STATE_LISTEN = 1;
-  int TCP_STATE_SYN_RCVD = 2;
   int TCP_STATE_SYN_SENT = 3;
-  int TCP_STATE_ESTABLISHED = 4;
-  int TCP_STATE_CLOSE_WAIT = 5;
-  int TCP_STATE_LAST_ACK = 6;
-  int TCP_STATE_FIN_WAIT = 7;
-  int TCP_STATE_CLOSING = 8;
-  int TCP_STATE_FIN_WAIT2 = 9;
-  int TCP_STATE_TIME_WAIT = 10;
   int TCP_STATE_CLOSED = 11;
   int tcp_state(sip&dip) = TCP_STATE_CLOSED;
   int tcp_state_ts(sip&dip);
@@ -26,12 +16,20 @@ program pan {
   entry {
     match_flow { f matches tcp_syn; }
     match_state { tcp_state == TCP_STATE_CLOSED; }
+    action_flow {pass;}
     action_state {tcp_state = TCP_STATE_SYN_SENT; tcp_state_ts = f[Tsval];}
   }
 
   entry {
     match_flow { f matches timer_logic; }
     match_state {tcp_state == TCP_STATE_SYN_SENT;}
+    action_flow {pass;}
     action_state {tcp_state_ts = f[Tsval];}
+  }
+
+  entry {
+    match_flow { f mismatches timer_logic; }
+    match_state {tcp_state == TCP_STATE_SYN_SENT;}
+    action_state {f[dip] = DROP;}
   }
 }
