@@ -78,8 +78,10 @@ void trace::print_path(vector<struct tracenode *> path) {
     if ((*it2)->decl == 1) {
       cout << "Allocate(" << (*it2)->a << ")" << endl;
     } else if ((*it2)->decl == 3) {
-      if ((*it2)->op2 != "")
+      if ((*it2)->op2 != "" && (*it2)->op != "")
 	cout << "Assert(" << (*it2)->a << " " << (*it2)->op2 << " " << (*it2)->b << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
+      else if ((*it2)->op2 != "" && (*it2)->op == "")
+	cout << "Assert(" << (*it2)->a << " " << (*it2)->op2 << " " << (*it2)->b << ")" << endl;
       else if ((*it2)->op == "=")
 	cout << "Assign(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->b << ")" << endl;
     } else if ((*it2)->op == "=") {
@@ -469,6 +471,10 @@ trace::trace(int index) {
   //trace::add_allocate_in("L4+109", 1);
   trace::add_allocate_in("L4+110", 1);
   trace::add_allocate_in("Tsval" + to_string(index), 1);
+  for (int i = index; i >= 2; i--) {
+      trace::add_allocate_in("Tsval" + to_string(i-1), 1);
+      trace::add_ct_node("Tsval" + to_string(i), ">", "Tsval" + to_string(i-1), "", 0);
+  }
   //trace::add_allocate_in("L4+111", 1);
 
 }
@@ -507,7 +513,7 @@ PATH:
 	      expr eq2 = (*decl_it) >=  (*it2)->value;
 	      s.add(eq2);
 	      if (s.check() == unsat) {
-		cout << "unsat" << endl;
+		//cout << "unsat" << endl;
 		del_node((*it2));
 		goto PATH;
 	      }
@@ -561,7 +567,7 @@ PATH:
 	      expr eq2 = (*decl_it1) - (*decl_it2) <=  (*it2)->value;
 	      s.add(eq2);
 	      if (s.check() == unsat) {
-		cout << "unsat" << endl;
+		//cout << "unsat" << endl;
 		del_node((*it2));
 		goto PATH;
 	      }
@@ -569,15 +575,23 @@ PATH:
 	      expr eq2 = (*decl_it1) - (*decl_it2) >  (*it2)->value;
 	      s.add(eq2);
 	      if (s.check() == unsat) {
-		cout << "unsat" << endl;
+		//cout << "unsat" << endl;
 		del_node((*it2));
 		goto PATH;
 	      }
 	    } else if ((*it2)->op == "=" && (*it2)->op2 == "") {
 	      expr eq2 = (*decl_it1) == (*decl_it2);
 	      s.add(eq2);
+	      //if (s.check() == unsat) {
+		//cout << "unsat " << endl;
+		//del_node((*it2));
+		//goto PATH;
+	      //}
+	    } else if ((*it2)->op == "" && (*it2)->op2 == ">") {
+	      expr eq2 = (*decl_it1) > (*decl_it2);
+	      s.add(eq2);
 	      if (s.check() == unsat) {
-		cout << "unsat " << endl;
+		//cout << "unsat " << endl;
 		del_node((*it2));
 		goto PATH;
 	      }
