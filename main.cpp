@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <chrono>
 
 #include "antlr/antlr4-runtime.h"
 #include "parser/NFCompilerLexer.h"
@@ -112,9 +113,16 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 
       t.add_mlrite_nodes(tmp3, tmp1);
   }
+  //auto total_start = chrono::high_resolution_clock::now();
   //t.print_all_paths();
+  //auto start = chrono::high_resolution_clock::now();
   t.execute();
+  //auto stop = chrono::high_resolution_clock::now();
   //t.print_all_paths();
+  //auto total_stop = chrono::high_resolution_clock::now();
+  //auto total_duration = chrono::duration_cast<chrono::microseconds>(total_stop - total_start);
+  //auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+  //cout << "time taken in z3 : " << duration.count() << " out of total " << total_duration.count() << endl;
   vector<vector <struct tracenode *>> paths = t.return_all_paths();
   vector<vector<struct tracenode *>>::iterator it_path;
   for (it_path = paths.begin(); it_path != paths.end(); it_path++) {
@@ -169,7 +177,11 @@ int main(int argc, char *argv[]) {
   int np;
   cout << " No. of packets: ";
   cin >> np;
+  auto start = chrono::high_resolution_clock::now();
   create_trace(visitor, 0, np);
+  auto stop = chrono::high_resolution_clock::now();
+  auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+  cout << "time taken " << duration.count() << endl; 
 
   return 0;
 }
