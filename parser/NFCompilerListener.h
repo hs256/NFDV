@@ -135,6 +135,9 @@ public:
   virtual void enterConst_int(NFCompilerParser::Const_intContext *ctx) = 0;
   virtual void exitConst_int(NFCompilerParser::Const_intContext *ctx) = 0;
 
+  virtual void enterConst_float(NFCompilerParser::Const_floatContext *ctx) = 0;
+  virtual void exitConst_float(NFCompilerParser::Const_floatContext *ctx) = 0;
+
   virtual void enterFlow_or_rule_entry(NFCompilerParser::Flow_or_rule_entryContext *ctx) = 0;
   virtual void exitFlow_or_rule_entry(NFCompilerParser::Flow_or_rule_entryContext *ctx) = 0;
 

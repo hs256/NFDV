@@ -132,6 +132,7 @@ expression_list  :
 constant  :
 	IP  #const_ip
 	| INT  #const_int
+	| FLOAT #const_float
 ;
 
 flow_or_rule_entry  :
@@ -155,7 +156,7 @@ fields  :
 	FIELD
 ;
 
-BASIC_TYPE  :'int' | 'IP';
+BASIC_TYPE  :'int' | 'IP' | 'float';
 
 SET  : 'set' ;
 MAP  : 'map' ;
@@ -227,6 +228,10 @@ IP  :
 
 INT  :
 	[0-9]+
+;
+
+FLOAT :
+	[0-9]+ '.' [0-9]+
 ;
 
 IDENT  :

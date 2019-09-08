@@ -137,6 +137,9 @@ public:
   virtual void enterConst_int(NFCompilerParser::Const_intContext * /*ctx*/) override { }
   virtual void exitConst_int(NFCompilerParser::Const_intContext * /*ctx*/) override { }
 
+  virtual void enterConst_float(NFCompilerParser::Const_floatContext * /*ctx*/) override { }
+  virtual void exitConst_float(NFCompilerParser::Const_floatContext * /*ctx*/) override { }
+
   virtual void enterFlow_or_rule_entry(NFCompilerParser::Flow_or_rule_entryContext * /*ctx*/) override { }
   virtual void exitFlow_or_rule_entry(NFCompilerParser::Flow_or_rule_entryContext * /*ctx*/) override { }
 

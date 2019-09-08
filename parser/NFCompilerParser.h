@@ -25,8 +25,8 @@ public:
     DATA = 39, COMMA = 40, LB = 41, RB = 42, LCB = 43, RCB = 44, LSB = 45, 
     RSB = 46, COLON = 47, START = 48, ASSIGN = 49, SEMICOLON = 50, MATCH_FLOW = 51, 
     MATCH_STATE = 52, ACTION_FLOW = 53, ACTION_STATE = 54, NEW_PACKET = 55, 
-    IP = 56, INT = 57, IDENT = 58, BLOCK_COMMENT = 59, LINE_COMMENT = 60, 
-    WS = 61
+    IP = 56, INT = 57, FLOAT = 58, IDENT = 59, BLOCK_COMMENT = 60, LINE_COMMENT = 61, 
+    WS = 62
   };
 
   enum {
@@ -737,8 +737,15 @@ public:
     antlr4::tree::TerminalNode *IP();
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+  };
 
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  class  Const_floatContext : public ConstantContext {
+  public:
+    Const_floatContext(ConstantContext *ctx);
+
+    antlr4::tree::TerminalNode *FLOAT();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
   };
 
   ConstantContext* constant();
