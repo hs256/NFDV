@@ -99,8 +99,10 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 	      } catch (...) {
 		char plus = '+';
 		char mul = '*';
+		char minus = '-';
 		size_t plus_found = astval.find(plus);
 		size_t mul_found = astval.find(mul);
+		size_t minus_found = astval.find(minus);
 		if (plus_found != string::npos) {
 		  int inc_val = 0;
 		  auto start = 0U;
@@ -112,6 +114,22 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 		    try {
 		      int astval_i1 = stoi(astval_i);
 		      astval_i1 = astval_i1 + inc_val;
+		      struct tracenode *astn = t.new_ct_node(as->state_var, "", to_string(astval_i1), "=", 0);
+		      tmp3.push_back(astn);
+		    } catch (...) {
+		    }
+		  }
+		} else if (minus_found != string::npos) {
+		  int dec_val = 0;
+		  auto start = 0U;
+		  start = minus_found + 1;
+		  minus_found = astval.find(minus, start);
+		  dec_val = stoi(astval.substr(start, minus_found));
+		  if(visitor.ST.find(as->state_var)) {
+		    string astval_i = visitor.ST.getValuebyName(as->state_var);
+		    try {
+		      int astval_i1 = stoi(astval_i);
+		      astval_i1 = astval_i1 - dec_val;
 		      struct tracenode *astn = t.new_ct_node(as->state_var, "", to_string(astval_i1), "=", 0);
 		      tmp3.push_back(astn);
 		    } catch (...) {
@@ -230,7 +248,7 @@ int main(int argc, char *argv[]) {
   NFCompilerVisitor visitor;
   antlrcpp::Any v = visitor.visitProgram(nf_name);
   //visitor.ST.printST();
-  visitor.print_entries();
+  //visitor.print_entries();
   //visitor.CT.printCT();
 
   int np;
