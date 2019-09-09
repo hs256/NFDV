@@ -112,7 +112,11 @@ void NFCompilerVisitor::print_entries() {
 	  } catch (bad_cast const& e) {
 	  }
 	}
+      } else if (type == "float") {
+	//cout << context->expression(0)->getText() << " float exp" << endl;
+	NFCompilerVisitor::ST.add(context->IDENT()->getText(), type, type, context->expression(0)->getText(), vector<string>());
       }
+
 
       return visitChildren(context);
     }
@@ -416,7 +420,8 @@ void NFCompilerVisitor::print_entries() {
 	    return tempi;
 	  } catch (bad_cast const& e) {
 	  }
-	} else if (ctx->op()->getText() == "-") {
+	} else if (ctx->op()->getText() == "-" && ST.find(ctx->expression(1)->getText())) {
+	  //cout << ctx->expression(0)->getText() << " " << ctx->op()->getText() << " " << ctx->expression(1)->getText() << " in double context " <<  endl;
 	  string op1 = ctx->op()->getText();
 	  vector<string> cn;
 	  try {
@@ -430,10 +435,18 @@ void NFCompilerVisitor::print_entries() {
 	  cn.push_back(c2);
 	  antlrcpp::Any tempn(cn);
 	  return cn;
+	} else if (ctx->op()->getText() == "-") {
+	  string minus_str = ctx->expression(0)->getText() + ctx->op()->getText() + ctx->expression(1)->getText();
+	  antlrcpp::Any temp_minus(minus_str);
+	  return temp_minus;
 	} else if (ctx->op()->getText() == "+") {
 	  string plus_str = ctx->expression(0)->getText() + ctx->op()->getText() + ctx->expression(1)->getText();
 	  antlrcpp::Any temp_plus(plus_str);
 	  return temp_plus;
+	} else if (ctx->op()->getText() == "*") {
+	  string mul_str = ctx->expression(0)->getText() + ctx->op()->getText() + ctx->expression(1)->getText();
+	  antlrcpp::Any temp_mul(mul_str);
+	  return temp_mul;
 	}
 	
     return visitChildren(ctx);

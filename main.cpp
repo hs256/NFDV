@@ -71,8 +71,13 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 	}
 	  tmp1.push_back(t1);
       } else if (visitor.CT.find(v) != NULL) {
+	if (mf_temp->match) {
 	struct tracenode *t1 = t.new_ct_node(visitor.CT.getc1byName(v) + to_string(index+1), visitor.CT.getop1byName(v), visitor.CT.getc2byName(v), visitor.CT.getop2byName(v), visitor.CT.getcvalbyName(v));
 	tmp1.push_back(t1);
+	} else if (!mf_temp->match && visitor.CT.getop2byName(v) == "<=") {
+	struct tracenode *t1 = t.new_ct_node(visitor.CT.getc1byName(v) + to_string(index+1), visitor.CT.getop1byName(v), visitor.CT.getc2byName(v), ">", visitor.CT.getcvalbyName(v));
+	tmp1.push_back(t1);
+	}
       }
     }
 
@@ -93,7 +98,9 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 		tmp3.push_back(astn);
 	      } catch (...) {
 		char plus = '+';
+		char mul = '*';
 		size_t plus_found = astval.find(plus);
+		size_t mul_found = astval.find(mul);
 		if (plus_found != string::npos) {
 		  int inc_val = 0;
 		  auto start = 0U;
@@ -105,6 +112,26 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 		    try {
 		      int astval_i1 = stoi(astval_i);
 		      astval_i1 = astval_i1 + inc_val;
+		      struct tracenode *astn = t.new_ct_node(as->state_var, "", to_string(astval_i1), "=", 0);
+		      tmp3.push_back(astn);
+		    } catch (...) {
+		    }
+		  }
+		} else if (mul_found != string::npos) {
+		  string mul_val;
+		  auto start = 0U;
+		  start = mul_found + 1;
+		  mul_found = astval.find(mul, start);
+		  mul_val = astval.substr(start, mul_found);
+		  if(visitor.ST.find(mul_val)) {
+		    mul_val = visitor.ST.getValuebyName(mul_val);
+		  }
+		  if (visitor.ST.find(as->state_var)) {
+		    string astval_i = visitor.ST.getValuebyName(as->state_var);
+		    try {
+		      double astval_i1 = (double)stoi(astval_i);
+		      double mul_val_ = ::atof(mul_val.c_str());
+		      astval_i1 = astval_i1 * mul_val_;
 		      struct tracenode *astn = t.new_ct_node(as->state_var, "", to_string(astval_i1), "=", 0);
 		      tmp3.push_back(astn);
 		    } catch (...) {
@@ -203,7 +230,7 @@ int main(int argc, char *argv[]) {
   NFCompilerVisitor visitor;
   antlrcpp::Any v = visitor.visitProgram(nf_name);
   //visitor.ST.printST();
-  //visitor.print_entries();
+  visitor.print_entries();
   //visitor.CT.printCT();
 
   int np;
