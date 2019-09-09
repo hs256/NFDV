@@ -177,6 +177,7 @@ void NFCompilerVisitor::print_entries() {
     }
 
     if (ctx->match_action()->match_state()) {
+      //cout << ctx->match_action()->match_state()->condition()->expression(0)->getText() << " match state entry " << endl;
       antlrcpp::Any a3 = NFCompilerVisitor::visit(ctx->match_action()->match_state()->condition()->expression(0));
       try {
 	vector<string> t_m;
@@ -184,7 +185,7 @@ void NFCompilerVisitor::print_entries() {
 	ms->state_var = t_m[0];
 	ms->op = t_m[1];
 	ms->state_val = t_m[2];
-	//cout << t_m[0] << " " << t_m[1] << " " << t_m[2] << " in visit entry " << endl; 
+	//cout << t_m[0] << " " << t_m[1] << " " << t_m[2] << " in visit entry " << endl;
       } catch (bad_cast const& e) {
 	//cout << "can't parse match state" << endl;
       }
@@ -400,6 +401,21 @@ void NFCompilerVisitor::print_entries() {
 	    return tempi;
 	  } catch (bad_cast const& e) {
 	  }
+      } else if (ctx->op()->getText() == "<") {
+	  string op2 = ctx->op()->getText();
+	  string cval = ctx->expression(1)->getText();
+	  try {
+	    antlrcpp::Any an = NFCompilerVisitor::visit(ctx->expression(0));
+	    string ci;
+	    vector<string> eq_si;
+	    ci = an.as<string>();
+	    eq_si.push_back(ci);
+	    eq_si.push_back(op2);
+	    eq_si.push_back(cval);
+	    antlrcpp::Any tempi(eq_si);
+	    return tempi;
+	  } catch (bad_cast const& e) {
+	  }
 	} else if (ctx->op()->getText() == "-") {
 	  string op1 = ctx->op()->getText();
 	  vector<string> cn;
@@ -414,6 +430,10 @@ void NFCompilerVisitor::print_entries() {
 	  cn.push_back(c2);
 	  antlrcpp::Any tempn(cn);
 	  return cn;
+	} else if (ctx->op()->getText() == "+") {
+	  string plus_str = ctx->expression(0)->getText() + ctx->op()->getText() + ctx->expression(1)->getText();
+	  antlrcpp::Any temp_plus(plus_str);
+	  return temp_plus;
 	}
 	
     return visitChildren(ctx);

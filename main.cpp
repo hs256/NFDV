@@ -86,9 +86,36 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 	      struct tracenode *astvar = t.new_assert_node(as->state_var, "=", astn);
 	      tmp3.push_back(astvar);
 	    } else if (astval != "") {
-	      string astval_n = astval + to_string(index+1);
-	      struct tracenode *astn = t.new_ct_node(as->state_var, "", astval_n, "=", 0);
-	      tmp3.push_back(astn);
+	      try {
+		int astval_n = stoi(astval);
+		string astval_n_str = to_string(astval_n);
+		struct tracenode *astn = t.new_ct_node(as->state_var, "", astval_n_str, "=", 0);
+		tmp3.push_back(astn);
+	      } catch (...) {
+		char plus = '+';
+		size_t plus_found = astval.find(plus);
+		if (plus_found != string::npos) {
+		  int inc_val = 0;
+		  auto start = 0U;
+		  start = plus_found + 1;
+		  plus_found = astval.find(plus, start);
+		  inc_val = stoi(astval.substr(start, plus_found));
+		  if(visitor.ST.find(as->state_var)) {
+		    string astval_i = visitor.ST.getValuebyName(as->state_var);
+		    try {
+		      int astval_i1 = stoi(astval_i);
+		      astval_i1 = astval_i1 + inc_val;
+		      struct tracenode *astn = t.new_ct_node(as->state_var, "", to_string(astval_i1), "=", 0);
+		      tmp3.push_back(astn);
+		    } catch (...) {
+		    }
+		  }
+		} else {
+		  string astval_n = astval + to_string(index+1);
+		  struct tracenode *astn = t.new_ct_node(as->state_var, "", astval_n, "=", 0);
+		  tmp3.push_back(astn);
+		}
+	      }
 	    }
 	  }
     }
@@ -106,8 +133,13 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 	if (visitor.ST.find(stval) != NULL) {
 	  string stc = visitor.ST.getValuebyName(stval);
 	  int stn = stoi(stc);
-	  struct tracenode *tvar = t.new_assert_node(ms->state_var, "==", stn);
-	  tmp1.push_back(tvar);
+	  if (ms->op == "==") {
+	    struct tracenode *tvar = t.new_assert_node(ms->state_var, "==", stn);
+	    tmp1.push_back(tvar);
+	  } else if (ms->op == "<") {
+	    struct tracenode *tvar = t.new_assert_node(ms->state_var, "<", stn);
+	    tmp1.push_back(tvar);
+	  }
 	}
       }
 
