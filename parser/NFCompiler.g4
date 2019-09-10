@@ -79,7 +79,7 @@ condition  :
 ;
 
 statement  :
-    (assignment| function_call | PASS) SEMICOLON ( statement )*
+    (assignment| function_call | PASS | RESUBMIT) SEMICOLON ( statement )*
 ;
 
 assignment  :
