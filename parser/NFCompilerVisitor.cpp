@@ -27,8 +27,9 @@ void NFCompilerVisitor::print_entries() {
   for (it = NFCompilerVisitor::entries.begin(); it != NFCompilerVisitor::entries.end(); it++) {
     vector<struct match_entry_flow*> mf = (*it)->m_f;
     struct action_flow *af = (*it)->a_f;
-    struct match_state *ms = (*it)->m_s;
+    vector<struct match_entry_state*> ms = (*it)->m_s;
     vector<struct match_entry_flow*>::iterator it2;
+    vector<struct match_entry_state*>::iterator it3;
     for (it2 = mf.begin(); it2 != mf.end(); it2++) {
       cout << (*it2)->op << " ";
       struct match_flow *mff = (*it2)->mf;
@@ -38,7 +39,13 @@ void NFCompilerVisitor::print_entries() {
 	cout << " mismatch ";
       cout << mff->var << " " ;
     }
-    cout << " && " << ms->state_var << " " << ms->op << " " << ms->state_val << "  " << af->field << "  " << af->action << endl ;
+
+    cout << " && ";
+    for (it3 = ms.begin(); it3 != ms.end(); it3++) {
+      struct match_state *mss = (*it3)->ms;
+      cout << mss->state_var << " " << mss->op << " " << mss->state_val << "  ";
+    }
+    cout << af->field << "  " << af->action << endl ;
   }
 }
 
@@ -128,9 +135,9 @@ void NFCompilerVisitor::print_entries() {
   antlrcpp::Any NFCompilerVisitor::visitEntry(NFCompilerParser::EntryContext *ctx)  {
     struct match_flow *mf = new match_flow;
     struct action_flow *af = new action_flow;
-    struct match_state *ms = new match_state;
     struct entry *en = new entry;
     vector<struct match_entry_flow *> map_mf;
+    vector<struct match_entry_state *> map_ms;
     vector<struct action_state *> asv;
     if (ctx->match_action()->match_flow() != NULL) {
       try {
@@ -181,17 +188,24 @@ void NFCompilerVisitor::print_entries() {
     }
 
     if (ctx->match_action()->match_state()) {
-      //cout << ctx->match_action()->match_state()->condition()->expression(0)->getText() << " match state entry " << endl;
-      antlrcpp::Any a3 = NFCompilerVisitor::visit(ctx->match_action()->match_state()->condition()->expression(0));
-      try {
-	vector<string> t_m;
-	t_m = a3.as<vector<string>>();
-	ms->state_var = t_m[0];
-	ms->op = t_m[1];
-	ms->state_val = t_m[2];
-	//cout << t_m[0] << " " << t_m[1] << " " << t_m[2] << " in visit entry " << endl;
-      } catch (bad_cast const& e) {
-	//cout << "can't parse match state" << endl;
+      int ms_n = ctx->match_action()->match_state()->condition()->expression().size();
+      for (int k = 0; k < ms_n; k++) {
+	antlrcpp::Any a3 = NFCompilerVisitor::visit(ctx->match_action()->match_state()->condition()->expression(k));
+	try {
+	  vector<string> t_m;
+	  struct match_state *ms = new match_state;
+	  t_m = a3.as<vector<string>>();
+	  ms->state_var = t_m[0];
+	  ms->op = t_m[1];
+	  ms->state_val = t_m[2];
+	  struct match_entry_state *mes = new match_entry_state;
+	  mes->op = true;
+	  mes->ms = ms;
+	  map_ms.push_back(mes);
+	  //cout << t_m[0] << " " << t_m[1] << " " << t_m[2] << " in visit entry  match state" << endl;
+	} catch (bad_cast const& e) {
+	  //cout << "can't parse match state" << endl;
+	}
       }
     }
 
@@ -221,7 +235,7 @@ void NFCompilerVisitor::print_entries() {
 
     en->m_f = map_mf;
     en->a_f = af;
-    en->m_s = ms;
+    en->m_s = map_ms;
     en->a_s = asv;
     //NFCompilerVisitor::entry_flow.insert(pair<struct match_flow*, struct action_flow*>(mf, af));  
     NFCompilerVisitor::entries.push_back(en);
@@ -406,6 +420,21 @@ void NFCompilerVisitor::print_entries() {
 	  } catch (bad_cast const& e) {
 	  }
       } else if (ctx->op()->getText() == "<") {
+	  string op2 = ctx->op()->getText();
+	  string cval = ctx->expression(1)->getText();
+	  try {
+	    antlrcpp::Any an = NFCompilerVisitor::visit(ctx->expression(0));
+	    string ci;
+	    vector<string> eq_si;
+	    ci = an.as<string>();
+	    eq_si.push_back(ci);
+	    eq_si.push_back(op2);
+	    eq_si.push_back(cval);
+	    antlrcpp::Any tempi(eq_si);
+	    return tempi;
+	  } catch (bad_cast const& e) {
+	  }
+      } else if (ctx->op()->getText() == "!=") {
 	  string op2 = ctx->op()->getText();
 	  string cval = ctx->expression(1)->getText();
 	  try {

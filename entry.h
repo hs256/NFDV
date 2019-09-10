@@ -28,10 +28,15 @@ struct match_entry_flow {
   struct match_flow *mf;
 };
 
+struct match_entry_state {
+  bool op;
+  struct match_state *ms;
+};
+
 struct entry {
   vector<struct match_entry_flow *> m_f;
   struct action_flow *a_f;
-  struct match_state *m_s;
+  vector<struct match_entry_state *> m_s;
   vector<struct action_state *> a_s;
 };
 #endif

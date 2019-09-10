@@ -50,9 +50,10 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
   for (it = visitor.entries.begin(); it != visitor.entries.end(); it++) {
     vector<struct match_entry_flow*> mef = (*it)->m_f;
     vector<struct match_entry_flow*>::iterator it2;
+    vector<struct match_entry_state*> mes = (*it)->m_s;
+    vector<struct match_entry_state*>::iterator it3;
     vector<struct tracenode*> tmp1, tmp3;
     struct action_flow *af = (*it)->a_f;
-    struct match_state *ms = (*it)->m_s;
     vector<struct action_state *> asv = ((*it)->a_s);
     vector<struct action_state *>::iterator itas;
     struct tracenode *t3;
@@ -173,19 +174,21 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 	t3 = NULL;
       
       tmp3.push_back(t3);
-      if(ms != NULL && ms->state_var != "") {
-	string stval = ms->state_val;
-	if (visitor.ST.find(stval) != NULL) {
-	  string stc = visitor.ST.getValuebyName(stval);
-	  int stn = stoi(stc);
-	  if (ms->op == "==") {
-	    struct tracenode *tvar = t.new_assert_node(ms->state_var, "==", stn);
+      for (it3 = mes.begin(); it3 != mes.end(); it3++) {
+	struct match_state *ms_temp = (*it3)->ms;
+	if(ms_temp != NULL && ms_temp->state_var != "") {
+	  string stval = ms_temp->state_val;
+	  if (visitor.ST.find(stval) != NULL) {
+	    string stc = visitor.ST.getValuebyName(stval);
+	    int stn = stoi(stc);
+	    struct tracenode *tvar = t.new_assert_node(ms_temp->state_var, ms_temp->op, stn);
 	    tmp1.push_back(tvar);
-	  } else if (ms->op == "<") {
-	    struct tracenode *tvar = t.new_assert_node(ms->state_var, "<", stn);
+	  } else {
+	    int stn = stoi(stval);
+	    struct tracenode *tvar = t.new_assert_node(ms_temp->state_var, ms_temp->op, stn);
 	    tmp1.push_back(tvar);
-	  }
-	}
+	  }  
+      }
       }
 
       t.add_mlrite_nodes(tmp3, tmp1);
