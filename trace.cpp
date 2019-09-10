@@ -290,6 +290,9 @@ struct tracenode* trace::add_ltree_nodes(struct tracenode *r, vector<struct trac
   //cout << "action size in ltree nodes " << tmp.size() << endl;
   vector<struct tracenode *>::iterator it;
   for (it = tmp.begin(); it != tmp.end(); it++) {
+    struct tracenode *temp = (*it);
+    if (temp == NULL)
+      continue;
     //cout << (*it)->a << " " << (*it)->op << (*it)->b << " in add ltree nodes " << endl;
     if ((*it)->b == "")
       r->left = new_assert_node((*it)->a, (*it)->op, (*it)->value);
@@ -335,7 +338,8 @@ void trace::add_mlrite_nodes(vector<struct tracenode *> action, vector<struct tr
   vector<struct tracenode *>::iterator it;
   for (it = leaves.begin(); it != leaves.end(); it++) {
     if ((*it)->a != "DROP" && (*it)->a != "pass") {
-      add_lrtree_nodes((*it), tmp, 0);
+      if (tmp.size() > 0)
+	add_lrtree_nodes((*it), tmp, 0);
       struct tracenode *ll = lmost_node((*it));
       if (action.size() > 0) {
 	add_ltree_nodes(ll, action);

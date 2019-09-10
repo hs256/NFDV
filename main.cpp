@@ -56,7 +56,7 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
     struct action_flow *af = (*it)->a_f;
     vector<struct action_state *> asv = ((*it)->a_s);
     vector<struct action_state *>::iterator itas;
-    struct tracenode *t3;
+    struct tracenode *t1, *t3;
     for (it2 = mef.begin(); it2 != mef.end(); it2++) {
       struct match_flow *mf_temp = (*it2)->mf;
       string v = mf_temp->var;
@@ -64,7 +64,6 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 	vector<string> g = visitor.ST.getGranularitybyName(v);
 	string c = visitor.ST.getValuebyName(v);
 	int val = stoi(c);
-	struct tracenode *t1;
 	if (mf_temp->match) {
 	  t1 = t.new_assert_node(pkt_fields[g[0]], "==", val);
 	} else {
@@ -73,11 +72,11 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 	  tmp1.push_back(t1);
       } else if (visitor.CT.find(v) != NULL) {
 	if (mf_temp->match) {
-	struct tracenode *t1 = t.new_ct_node(visitor.CT.getc1byName(v) + to_string(index+1), visitor.CT.getop1byName(v), visitor.CT.getc2byName(v), visitor.CT.getop2byName(v), visitor.CT.getcvalbyName(v));
-	tmp1.push_back(t1);
+	  t1 = t.new_ct_node(visitor.CT.getc1byName(v) + to_string(index+1), visitor.CT.getop1byName(v), visitor.CT.getc2byName(v), visitor.CT.getop2byName(v), visitor.CT.getcvalbyName(v));
+	  tmp1.push_back(t1);
 	} else if (!mf_temp->match && visitor.CT.getop2byName(v) == "<=") {
-	struct tracenode *t1 = t.new_ct_node(visitor.CT.getc1byName(v) + to_string(index+1), visitor.CT.getop1byName(v), visitor.CT.getc2byName(v), ">", visitor.CT.getcvalbyName(v));
-	tmp1.push_back(t1);
+	  t1 = t.new_ct_node(visitor.CT.getc1byName(v) + to_string(index+1), visitor.CT.getop1byName(v), visitor.CT.getc2byName(v), ">", visitor.CT.getcvalbyName(v));
+	  tmp1.push_back(t1);
 	}
       }
     }
