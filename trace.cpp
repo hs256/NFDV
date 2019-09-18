@@ -95,6 +95,8 @@ void trace::print_path(vector<struct tracenode *> path) {
       cout << "DROP pkt" << endl;
     } else if ((*it2)->a == "pass") {
       cout << "Pass pkt" << endl;
+    } else if ((*it2)->a == "resubmit") {
+      cout << "Resubmitting pkt" << endl;
     } else {
       cout << "Assert(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
     }
@@ -121,6 +123,8 @@ void trace::print_all_paths() {
 	cout << "DROP pkt" << endl;
       } else if ((*it2)->a == "pass") {
 	cout << "Pass pkt" << endl;
+      } else if ((*it2)->a == "resubmit") {
+	cout << "Resubmitting pkt" << endl;
       } else {
 	cout << "Assert(" << (*it2)->a << " " << (*it2)->op << " " << (*it2)->value << ")" << endl;
       }
@@ -227,7 +231,7 @@ void trace::add_decl_node(string s) {
     vector<struct tracenode*>::iterator it;
     for (it = leaves.begin(); it != leaves.end(); it++) {
       //temp->id = allocate_ins_count++;
-      if ((*it)->a != "DROP" && (*it)->a != "pass")
+      if ((*it)->a != "DROP" && (*it)->a != "pass" && (*it)->a != "resubmit")
 	(*it)->left = new_decl_node(s);
       //cout << "parent id " << (*it)->id << " " << "child id " << temp->id << endl;
     }
@@ -241,7 +245,7 @@ void trace::add_assign_node(string s1, string op, int value) {
   leaves = trace::leaf_nodes(root, leaves);
   vector<struct tracenode*>::iterator it;
   for (it = leaves.begin(); it != leaves.end(); it++) {
-    if ((*it)->a != "DROP" && (*it)->a != "pass")
+    if ((*it)->a != "DROP" && (*it)->a != "pass" && (*it)->a != "resubmit")
       (*it)->left = new_assign_node(s1, op, value);
   }
   return;
@@ -252,7 +256,7 @@ void trace::add_ct_node(string a1, string op1, string a2, string op2, int value)
   leaves = trace::leaf_nodes(root, leaves);
   vector<struct tracenode*>::iterator it;
   for (it = leaves.begin(); it != leaves.end(); it++) {
-    if ((*it)->a != "DROP" && (*it)->a != "pass")
+    if ((*it)->a != "DROP" && (*it)->a != "pass" && (*it)->a != "resubmit")
       (*it)->left = new_ct_node(a1, op1, a2, op2, value);
   }
   return;
@@ -264,7 +268,7 @@ void trace::add_assert_node(string s1, string op, int value) {
   vector<struct tracenode*>::iterator it;
   for (it = leaves.begin(); it != leaves.end(); it++) {
     //temp->id = assert_ins_count++;
-    if ((*it)->a != "DROP" && (*it)->a != "pass")
+    if ((*it)->a != "DROP" && (*it)->a != "pass" && (*it)->a != "resubmit")
       (*it)->left = new_assert_node(s1, op, value);
     //cout << "parent id " << (*it)->id << " " << "child id " << temp->id << endl;
   }
@@ -277,7 +281,7 @@ void trace::add_ite_node(struct tracenode *t1, struct tracenode *t2, struct trac
   //cout << "leaf nodes in ite " << leaves.size() << endl;
   vector<struct tracenode*>::iterator it;
   for (it = leaves.begin(); it != leaves.end(); it++) {
-    if ((*it)->a != "DROP" && (*it)->a != "pass") {
+    if ((*it)->a != "DROP" && (*it)->a != "pass" && (*it)->a != "resubmit") {
       (*it)->left = new_assert_node(t1->a, t1->op, t1->value);
       (*it)->right = new_assert_node(t2->a, t2->op, t2->value);
       if (t3 != NULL)
@@ -337,7 +341,7 @@ void trace::add_mlrite_nodes(vector<struct tracenode *> action, vector<struct tr
   //cout << " no of leaves in mlrite " << leaves.size() << endl;
   vector<struct tracenode *>::iterator it;
   for (it = leaves.begin(); it != leaves.end(); it++) {
-    if ((*it)->a != "DROP" && (*it)->a != "pass") {
+    if ((*it)->a != "DROP" && (*it)->a != "pass" && (*it)->a != "resubmit") {
       if (tmp.size() > 0)
 	add_lrtree_nodes((*it), tmp, 0);
       struct tracenode *ll = lmost_node((*it));
@@ -354,7 +358,7 @@ void trace::add_mite_node(vector<struct tracenode *> tmp1, vector<struct traceno
   leaves = trace::leaf_nodes(root, leaves);
   vector<struct tracenode *>::iterator it;
   for (it = leaves.begin(); it != leaves.end(); it++) {
-    if ((*it)->a != "DROP" && (*it)->a != "pass") {
+    if ((*it)->a != "DROP" && (*it)->a != "pass" && (*it)->a != "resubmit") {
       (*it)->left = new_assert_node(tmp1[0]->a, tmp1[0]->op, tmp1[0]->value);
       (*it)->right = new_assert_node(tmp2[0]->a, tmp2[0]->op, tmp2[0]->value);
       tmp1.erase(tmp1.begin());

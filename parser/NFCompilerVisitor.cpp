@@ -298,6 +298,8 @@ void NFCompilerVisitor::print_entries() {
      if (ctx->PASS()) {
        //cout << ctx->PASS()->getText() << " in visit statement " << endl;
        return antlrcpp::Any(ctx->PASS()->getText());
+    } else if (ctx->RESUBMIT()) {
+      return antlrcpp::Any(ctx->RESUBMIT()->getText());
     } else
        return visitChildren(ctx);
   }

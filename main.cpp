@@ -28,8 +28,9 @@ map<string, string> pkt_fields {
   {"flag_fin", "L4+111"}
 };
 
-void create_trace(NFCompilerVisitor visitor, int index, int np) {
+void create_trace(NFCompilerVisitor visitor, int index, int np, int resubmit_id) {
   trace t(index+1);
+  int resubmit_id_temp = 0;
   vector<Symbol *> svt = visitor.ST.state_vars();
   vector<Symbol *>::iterator its;
   for (its = svt.begin(); its != svt.end(); its++) {
@@ -169,7 +170,10 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 	t3 = t.new_assert_node("DROP", "", 0);
       else if(af->action == "pass")
 	t3 = t.new_assert_node("pass", "", 0);
-      else
+      else if(af->action == "resubmit") {
+	//resubmit_id = index; 
+	t3 = t.new_assert_node("resubmit", "", 0);
+      } else
 	t3 = NULL;
       
       tmp3.push_back(t3);
@@ -205,10 +209,13 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
   vector<vector <struct tracenode *>> paths = t.return_all_paths();
   vector<vector<struct tracenode *>>::iterator it_path;
   for (it_path = paths.begin(); it_path != paths.end(); it_path++) {
+    resubmit_id_temp++;
+    if (resubmit_id > 0 && resubmit_id_temp == resubmit_id) {
     vector<struct tracenode *> path = (*it_path);
     cout << "PACKET: " << index+1 << endl;
     t.print_path(path);
     vector<struct tracenode *>::iterator it_node;
+    struct tracenode *last_node;
     for (it_node = path.begin(); it_node != path.end(); it_node++) {
       if((*it_node)->op == "=" || (*it_node)->decl == 2) {
 	if (visitor.ST.find((*it_node)->a)) {
@@ -221,10 +228,46 @@ void create_trace(NFCompilerVisitor visitor, int index, int np) {
 	  }
 	}
       }
+      if ((*it_node)->decl == 0)
+	last_node = (*it_node);
     }
-    if (index < np-1) {
-      create_trace(visitor, index+1, np);
+    //cout << "before creat trace resubmit id " << resubmit_id << endl;
+    if (index < np-1 && last_node->a == "resubmit" ) {
+      cout << "resubmit id " << resubmit_id_temp << endl;
+      create_trace(visitor, index+1, np, resubmit_id_temp);
+    } else if (index < np - 1) {
+      create_trace(visitor, index+1, np, 0);
     }
+    break;
+  } else {
+    vector<struct tracenode *> path = (*it_path);
+    cout << "PACKET: " << index+1 << endl;
+    t.print_path(path);
+    vector<struct tracenode *>::iterator it_node;
+    struct tracenode *last_node;
+    for (it_node = path.begin(); it_node != path.end(); it_node++) {
+      if((*it_node)->op == "=" || (*it_node)->decl == 2) {
+	if (visitor.ST.find((*it_node)->a)) {
+	  if ((*it_node)->b == "") {
+	    visitor.ST.modify((*it_node)->a, to_string((*it_node)->value));
+	  } else {
+	    //string new_val = (*it_node)->b + to_string(index+1);
+	    string new_val = (*it_node)->b;
+	    visitor.ST.modify((*it_node)->a, new_val);
+	  }
+	}
+      }
+      if ((*it_node)->decl == 0)
+	last_node = (*it_node);
+    }
+    //cout << "before creat trace resubmit id " << resubmit_id << endl;
+    if (index < np-1 && last_node->a == "resubmit" ) {
+      cout << "resubmit id " << resubmit_id_temp << endl;
+      create_trace(visitor, index+1, np, resubmit_id_temp);
+    } else if (index < np - 1) {
+      create_trace(visitor, index+1, np, 0);
+    }
+  }
   }
 
 }
@@ -257,7 +300,7 @@ int main(int argc, char *argv[]) {
   cout << " No. of packets: ";
   cin >> np;
   auto start = chrono::high_resolution_clock::now();
-  create_trace(visitor, 0, np);
+  create_trace(visitor, 0, np, 0);
   auto stop = chrono::high_resolution_clock::now();
   auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
   cout << "time taken " << duration.count() << endl; 
