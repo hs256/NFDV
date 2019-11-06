@@ -1,7 +1,7 @@
 program ssd {
   int list(sip&dip) = 0;
   int threshold = 100;
-  int ssd_ts(sip&dip) = 0;
+  int ssd_ts(sip&dip);
   float ratio = 0.8;
   rule timer_logic = f[Tsval] - ssd_ts <= 100;
   rule tcp_syn = flag_syn:1;

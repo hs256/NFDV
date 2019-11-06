@@ -1,0 +1,36 @@
+program pan {
+  int TCP_STATE_SYN_SENT = 3;
+  int TCP_STATE_CLOSED = 11;
+  int tcp_state(sip&dip) = TCP_STATE_CLOSED;
+  int tcp_state_ts(sip&dip);
+  rule tcp_proto = proto:6;
+  rule tcp_syn = flag_syn:1;
+  rule timer_logic = f[Tsval] - tcp_state_ts <= 300;
+
+
+  entry {
+    match_flow { f mismatches tcp_proto; }
+    action_flow { f[dip] = DROP; }
+  }
+
+  entry {
+    match_flow { f matches tcp_syn; }
+    match_state { tcp_state == TCP_STATE_CLOSED; }
+    action_flow {pass;}
+    action_state {tcp_state = TCP_STATE_SYN_SENT; tcp_state_ts = f[Tsval];}
+  }
+
+  entry {
+    match_flow { f matches timer_logic; }
+    match_state {tcp_state == TCP_STATE_SYN_SENT;}
+    action_flow {pass;}
+    action_state {tcp_state_ts = f[Tsval];}
+  }
+
+  entry {
+    match_flow { f mismatches timer_logic; }
+    match_state {tcp_state == TCP_STATE_SYN_SENT;}
+    action_flow { f[dip] = DROP; }
+    action_state {tcp_state = TCP_STATE_CLOSED;}
+  }
+}
