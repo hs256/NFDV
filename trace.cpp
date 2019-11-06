@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <z3++.h>
+#include <chrono>
 
 //#include "pkt.h"
 #include "trace.h"
@@ -496,15 +497,18 @@ PATH:
   int path_i = 1;
   for (it = paths.begin(); it != paths.end(); it++) {
     //cout << "Trace " << path_i++ << " ";
+    int ct = 0;
     solver s(ctx);
     vector<expr> decl_exprs;
     vector<struct tracenode*> t_path = (*it);
     vector<struct tracenode*>::iterator it2;
+    auto start = chrono::high_resolution_clock::now();
     for (it2 = t_path.begin(); it2 != t_path.end(); it2++) {
       if ((*it2) == NULL) {
 	//cout << "null node in path " << endl;
 	goto PATH;
       }
+      ct++;
       if((*it2)->decl == 1) {
 	string unique_name = (*it2)->a;
 	const char *name = unique_name.c_str();
@@ -610,7 +614,9 @@ PATH:
       }
 
     }
-    //cout << s.check() << endl;
+    auto stop = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+    cout << "time in z3 " << duration.count() << " for constraints " << ct << endl;
   }
 }
 
