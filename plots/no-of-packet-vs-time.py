@@ -12,15 +12,23 @@ import numpy as np
 #    r=row[im]
 #    c=col[im]
 #    axe[r][c].scatter(getdata(), getdata())
+linewidth = 1.5
+markerSize = 6.5
 
-plt.plot([1, 2, 3, 4], [0.298, 1.687, 8.027, 39.71], 'b-', label = 'PAN FW')
-plt.plot([1, 2, 3, 4], [3.296, 35.883, 325.59, 3031.42], 'r--', label = 'SSD')
-plt.plot([1, 2, 3, 4], [49.160, 198.044, 804.65, 2129.33], 'g-.', label = 'HHD')
-plt.plot([1, 2, 3, 4], [30.41, 240.20, 1087.5, 5134.23], 'm.-.', label = 'SYN Flood')
-plt.plot([1, 2, 3, 4], [0.27, 0.887, 2.644, 7.047], 'k:', label = 'Rate limiter')
+plt.plot([1, 2, 3, 4], [0.298, 1.687, 8.027, 39.71], 'b-', marker = "v", ms = markerSize, label = 'PAN FW', lw =linewidth)
+plt.plot([1, 2, 3, 4], [3.296, 35.883, 325.59, 3031.42], 'r.-.', marker = '*', ms = markerSize, label = 'SSD', lw =linewidth)
+plt.plot([1, 2, 3, 4], [49.160, 198.044, 804.65, 2129.33], 'g--', marker = 'o', ms = markerSize, label = 'HHD', lw =linewidth)
+plt.plot([1, 2, 3, 4], [30.41, 240.20, 1087.5, 5134.23], 'm.-.', marker = '^', ms = markerSize, label = 'SYN Flood', lw =linewidth)
+plt.plot([1, 2, 3, 4], [0.27, 0.887, 2.644, 7.047], 'k:', marker = 's', ms = markerSize-0.5, label = 'Rate limiter', lw =linewidth)
 plt.yscale('log')
+
+x_ticks = np.arange(0, 5, 1)
+plt.xticks(x_ticks)
+plt.margins(x=0.08)
 plt.xlabel('No. of packets')
 plt.ylabel('Time in s (log scale)')
-plt.legend()
+plt.legend(loc = 'best', fontsize=12)
+
+# plt.show()
 # trial 1 -> tried and it works, no need for trial 2
-plt.savefig('figure1.pdf')
+plt.savefig('PacketVsTime.pdf')
