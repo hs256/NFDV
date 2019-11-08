@@ -31,4 +31,4 @@ plt.legend(loc = 'best', fontsize=12)
 
 # plt.show()
 # trial 1 -> tried and it works, no need for trial 2
-plt.savefig('PacketVsTime.pdf')
+plt.savefig('packet-vs-time.pdf')
