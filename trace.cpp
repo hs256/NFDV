@@ -616,7 +616,7 @@ PATH:
     }
     auto stop = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
-    cout << "time in z3 " << duration.count() << " for constraints " << ct << endl;
+    cout << "time_in_z3 " << ct << " " <<  duration.count()*10e-6  << endl;
   }
 }
 

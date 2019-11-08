@@ -222,7 +222,7 @@ void create_trace(NFCompilerVisitor visitor, int index, int np, int resubmit_id,
   //auto total_stop = chrono::high_resolution_clock::now();
   //auto total_duration = chrono::duration_cast<chrono::microseconds>(total_stop - total_start);
   auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
-  cout << "time taken in z3 : " << duration.count() << " for constarints " << cons << endl;
+  //cout << "time taken in z3 : " << duration.count() << " for constarints " << cons << endl;
   vector<vector <struct tracenode *>> paths = t.return_all_paths();
   vector<vector<struct tracenode *>>::iterator it_path;
   vector<int> cn;
