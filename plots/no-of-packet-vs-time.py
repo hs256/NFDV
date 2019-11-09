@@ -23,11 +23,12 @@ plt.plot([1, 2, 3, 4], [0.27, 0.887, 2.644, 7.047], 'k:', marker = 's', ms = mar
 plt.yscale('log')
 
 x_ticks = np.arange(0, 5, 1)
-plt.xticks(x_ticks)
+plt.xticks(x_ticks, fontsize=18)
+plt.yticks(fontsize=18)
 plt.margins(x=0.08)
-plt.xlabel('No. of packets')
-plt.ylabel('Time in s (log scale)')
-plt.legend(loc = 'best', fontsize=12)
+plt.xlabel('No. of packets', fontsize=18)
+plt.ylabel('Time in s (log scale)', fontsize=18)
+plt.legend(loc = 'best', fontsize=14)
 
 # plt.show()
 # trial 1 -> tried and it works, no need for trial 2

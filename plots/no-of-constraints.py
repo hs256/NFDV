@@ -34,9 +34,13 @@ plt.scatter(panx, pany, alpha = 0.8, s=5, c='r', label = 'PAN FW')
 #plt.scatter([6, 37, 196], [30.41, 240.20, 1087.5], alpha=0.8,s=20, c='m', marker='*',label = 'SYN Flood')
 #plt.scatter([5, 18, 47, 108], [0.27, 0.887, 2.644, 7.047], alpha=0.8,s=20, c='k', label = 'Rate limiter')
 #plt.yscale('log')
-plt.xlabel('No. of constraints')
-plt.ylabel('Time in Z3 (in s)')
-plt.legend(loc = 'best', fontsize=12)
+
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+
+plt.xlabel('No. of constraints', fontsize=18)
+plt.ylabel('Time in Z3 (in s)', fontsize=18)
+plt.legend(loc = 'best', fontsize=15)
 
 # plt.show()
 # trial 1 -> tried and it works, no need for trial 2

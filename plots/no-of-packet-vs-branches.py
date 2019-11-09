@@ -23,12 +23,13 @@ plt.plot([1, 2, 3, 4], [5, 13, 24, 38], 'k:',marker = "s", ms = markerSize-0.5, 
 plt.yscale('log')
 
 x_ticks = np.arange(0, 5, 1)
-plt.xticks(x_ticks)
+plt.xticks(x_ticks, fontsize=18)
+plt.yticks(fontsize=18)
 plt.margins(x=0.08)
 
-plt.xlabel('No. of packets')
-plt.ylabel('No. of branches (log scale)')
-plt.legend(loc = 'best', fontsize=12)
+plt.xlabel('No. of packets', fontsize=18)
+plt.ylabel('No. of branches (log scale)', fontsize=18)
+plt.legend(loc = 'best', fontsize=15)
 
 
 # plt.show()
