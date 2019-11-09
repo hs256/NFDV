@@ -13,12 +13,22 @@ import numpy as np
 #    c=col[im]
 #    axe[r][c].scatter(getdata(), getdata())
 
+data={}
+
+
 with open('pan_fw_1.txt') as f:
     lines = f.readlines();
     panx = [line.split()[0] for line in lines]
     pany = [line.split()[1] for line in lines]
 
-plt.scatter(panx, pany, alpha = 0.8, s=5, c='b', marker = '^', label = 'PAN FW')
+for i in np.arange(len(panx)):
+	if panx[i] in data:
+		data[i].append(pany[i])
+	else:
+		data[i] = []
+
+
+plt.scatter(panx, pany, alpha = 0.8, s=5, c='r', label = 'PAN FW')
 #plt.scatter([10, 12, 13, 15, 17, 19, 20, 21], [0.0075, 0.0078, 0.0078, 0.0082, 0.0085, 0.008, 0.0089, 0.0083 ], alpha=0.8,s=20, c='r', marker='o',label = 'SSD')
 #plt.scatter([3, 12, 39, 120], [49.160, 198.044, 804.65, 2129.33],alpha=0.8, s=20, c='g', marker = 's',label = 'HHD')
 #plt.scatter([6, 37, 196], [30.41, 240.20, 1087.5], alpha=0.8,s=20, c='m', marker='*',label = 'SYN Flood')
@@ -26,6 +36,8 @@ plt.scatter(panx, pany, alpha = 0.8, s=5, c='b', marker = '^', label = 'PAN FW')
 #plt.yscale('log')
 plt.xlabel('No. of constraints')
 plt.ylabel('Time in Z3 (in s)')
-plt.legend()
+plt.legend(loc = 'best', fontsize=12)
+
+# plt.show()
 # trial 1 -> tried and it works, no need for trial 2
-plt.savefig('figure3.pdf')
+plt.savefig('constraint-vs-time.pdf')
