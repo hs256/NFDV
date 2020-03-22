@@ -1,0 +1,29 @@
+program fw {
+  int TCP_STATE_CLOSED = 11;
+  int TCP_STATE_OPEN = 3;
+  int tcp_state(sip&dip) = TCP_STATE_CLOSED;
+  int tcp_state_ts(sip&dip);
+  rule tcp_syn = flag_syn:1;
+  rule timer_logic = f[Tsval] - tcp_state_ts <= 30;
+
+  entry {
+    match_flow { f matches tcp_syn; }
+    action_flow {pass;}
+    action_state{ tcp_state = TCP_STATE_OPEN; tcp_state_ts = f[Tsval];}
+  }
+
+  entry {
+    match_flow { f matches timer_logic; }
+    match_state { tcp_state == TCP_STATE_OPEN; }
+    action_flow {pass;}
+    action_state {tcp_state_ts = f[Tsval];}
+  }
+
+  entry {
+    match_flow{f mismatches timer_logic; }
+    match_state { tcp_state == TCP_STATE_OPEN; }
+    action_flow {f[dip] = DROP;}
+    action_state {tcp_state = TCP_STATE_CLOSED;}
+  }
+}
+    
