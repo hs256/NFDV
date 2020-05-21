@@ -28,8 +28,8 @@ map<string, string> pkt_fields {
   {"flag_fin", "L4+111"}
 };
 
-void create_trace(NFCompilerVisitor visitor, int index, int np, int resubmit_id) {
-  trace t(index+1);
+void create_trace(NFCompilerVisitor visitor, int index, int np, int resubmit_id, bool tl) {
+  trace t(index+1, tl);
   int resubmit_id_temp = 0;
   vector<Symbol *> svt = visitor.ST.state_vars();
   vector<Symbol *>::iterator its;
@@ -234,9 +234,9 @@ void create_trace(NFCompilerVisitor visitor, int index, int np, int resubmit_id)
     //cout << "before creat trace resubmit id " << resubmit_id << endl;
     if (index < np-1 && last_node->a == "resubmit" ) {
       cout << "resubmit id " << resubmit_id_temp << endl;
-      create_trace(visitor, index+1, np, resubmit_id_temp);
+      create_trace(visitor, index+1, np, resubmit_id_temp, tl);
     } else if (index < np - 1) {
-      create_trace(visitor, index+1, np, 0);
+      create_trace(visitor, index+1, np, 0, tl);
     }
     break;
   } else {
@@ -263,9 +263,9 @@ void create_trace(NFCompilerVisitor visitor, int index, int np, int resubmit_id)
     //cout << "before creat trace resubmit id " << resubmit_id << endl;
     if (index < np-1 && last_node->a == "resubmit" ) {
       cout << "resubmit id " << resubmit_id_temp << endl;
-      create_trace(visitor, index+1, np, resubmit_id_temp);
+      create_trace(visitor, index+1, np, resubmit_id_temp, tl);
     } else if (index < np - 1) {
-      create_trace(visitor, index+1, np, 0);
+      create_trace(visitor, index+1, np, 0, tl);
     }
   }
   }
@@ -299,8 +299,11 @@ int main(int argc, char *argv[]) {
   int np;
   cout << " No. of packets: ";
   cin >> np;
+  bool tlogic;
+  cout << "Timer logic: ";
+  cin >> tlogic;
   auto start = chrono::high_resolution_clock::now();
-  create_trace(visitor, 0, np, 0);
+  create_trace(visitor, 0, np, 0, tlogic);
   auto stop = chrono::high_resolution_clock::now();
   auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
   cout << "time taken " << duration.count() << endl; 

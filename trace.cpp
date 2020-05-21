@@ -436,12 +436,12 @@ void trace::add_assert_in(string a, string op, int value) {
   add_assert_node(a, op, value);
 }
 
-trace::trace(int index) {
+trace::trace(int index, bool tl) {
   allocate_ins_count = 0;
   assert_ins_count = 0;
   root = NULL;
   //cout << "creating symbolic packet" << endl;
-  trace::add_allocate_in("L3+0", 4);
+  //trace::add_allocate_in("L3+0", 4);
   trace::add_allocate_in("L3+72", 8);
   /*trace::add_allocate_in("L3+96", 32);
   trace::add_assert_in("L3+96", ">=", 0);
@@ -478,10 +478,12 @@ trace::trace(int index) {
   //trace::add_allocate_in("L4+108", 1);
   //trace::add_allocate_in("L4+109", 1);
   trace::add_allocate_in("L4+110", 1);
+  if (tl == 1) {
   trace::add_allocate_in("Tsval" + to_string(index), 1);
   for (int i = index; i >= 2; i--) {
       trace::add_allocate_in("Tsval" + to_string(i-1), 1);
       trace::add_ct_node("Tsval" + to_string(i), ">", "Tsval" + to_string(i-1), "", 0);
+  }
   }
   //trace::add_allocate_in("L4+111", 1);
 
