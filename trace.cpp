@@ -499,7 +499,7 @@ PATH:
   for (it = paths.begin(); it != paths.end(); it++) {
     //cout << "Trace " << path_i++ << " ";
     solver s(ctx);
-    vector<expr> decl_exprs;
+    map<string, expr> decl_exprs;
     vector<struct tracenode*> t_path = (*it);
     vector<struct tracenode*>::iterator it2;
     for (it2 = t_path.begin(); it2 != t_path.end(); it2++) {
@@ -511,94 +511,90 @@ PATH:
 	string unique_name = (*it2)->a;
 	const char *name = unique_name.c_str();
 	Z3_sort int_sort = Z3_mk_int_sort(ctx);
-	Z3_symbol s = Z3_mk_string_symbol(ctx, const_cast<char *>(name));
-	Z3_ast x = Z3_mk_const(ctx, s, int_sort);
+	Z3_symbol sm = Z3_mk_string_symbol(ctx, const_cast<char *>(name));
+	Z3_ast x = Z3_mk_const(ctx, sm, int_sort);
 	expr eq(ctx, x);
-	decl_exprs.push_back(eq);
+	decl_exprs.insert(pair<string, expr>(unique_name, eq));
       } else if ((*it2)->decl == 0 || (*it2)->decl == 2) {
-	vector<expr>::iterator decl_it;
-	for (decl_it = decl_exprs.begin(); decl_it != decl_exprs.end(); decl_it++) {
-	  if ((*decl_it).decl().name().str() == (*it2)->a) {
-	    if ((*it2)->op == ">=") {
-	      expr eq2 = (*decl_it) >=  (*it2)->value;
+	map<string, expr>::iterator decl_it;
+	decl_it = decl_exprs.find((*it2)->a);
+	  if ((*it2)->op == ">=") {
+	      expr eq2 = (decl_it->second) >=  (*it2)->value;
 	      s.add(eq2);
 	      if (s.check() == unsat) {
 		//cout << "unsat" << endl;
 		del_node((*it2));
 		goto PATH;
 	      }
-	    } else if ((*it2)->op == ">") {
-	      expr eq2 = (*decl_it) > (*it2)->value;
+	  } else if ((*it2)->op == ">") {
+	      expr eq2 = (decl_it->second) > (*it2)->value;
 	      s.add(eq2);
 	      if (s.check() == unsat) {
 		del_node((*it2));
 		goto PATH;
 	      }
-	    } else if ((*it2)->op == "<") {
-	      expr eq2 = (*decl_it) < (*it2)->value;
+	  } else if ((*it2)->op == "<") {
+	      expr eq2 = (decl_it->second) < (*it2)->value;
 	      s.add(eq2);
 	      if (s.check() == unsat) {
 		del_node((*it2));
 		goto PATH;
 	      }
-	    } else if ((*it2)->op == "<=") {
-	      expr eq2 = (*decl_it) <= (*it2)->value;
+	  } else if ((*it2)->op == "<=") {
+	      expr eq2 = (decl_it->second) <= (*it2)->value;
 	      s.add(eq2);
 	      if (s.check() == unsat) {
 		del_node((*it2));
 		goto PATH;
 	      }
-	    } else if ((*it2)->op == "==") {
-	      expr eq2 = (*decl_it) == (*it2)->value;
+	  } else if ((*it2)->op == "==") {
+	      expr eq2 = (decl_it->second) == (*it2)->value;
 	      s.add(eq2);
 	      if (s.check() == unsat) {
 		del_node((*it2));
 		//cout << "deleted node unsat ==" << endl;
 		goto PATH;
 	      }
-	    } else if ((*it2)->op == "!=") {
-	      expr eq2 = (*decl_it) != (*it2)->value;
+	  } else if ((*it2)->op == "!=") {
+	      expr eq2 = (decl_it->second) != (*it2)->value;
 	      s.add(eq2);
 	      if (s.check() == unsat) {
 		del_node((*it2));
 		//cout << "deleted node unsat !=" << endl;
 		goto PATH;
 	      }
-	    }
 	  }
-	}
       } else if ((*it2)->decl == 3) {
-	vector<expr>::iterator decl_it1;
-	vector<expr>::iterator decl_it2;
-	for (decl_it1 = decl_exprs.begin(); decl_it1 != decl_exprs.end(); decl_it1++) {
-	  for (decl_it2 = decl_exprs.begin(); decl_it2 != decl_exprs.end(); decl_it2++) {
-	  if ((*decl_it1).decl().name().str() == (*it2)->a && (*decl_it2).decl().name().str() == (*it2)->b) {
-	    if ((*it2)->op == "<=" && (*it2)->op2 == "-") {
-	      expr eq2 = (*decl_it1) - (*decl_it2) <=  (*it2)->value;
+	map<string, expr>::iterator decl_it1;
+	decl_it1 = decl_exprs.find((*it2)->a);
+	map<string, expr>::iterator decl_it2;
+	decl_it2 = decl_exprs.find((*it2)->b);
+	if ((*it2)->op == "<=" && (*it2)->op2 == "-") {
+	      expr eq2 = (decl_it1->second) - (decl_it2->second) <=  (*it2)->value;
 	      s.add(eq2);
 	      if (s.check() == unsat) {
 		//cout << "unsat" << endl;
 		del_node((*it2));
 		goto PATH;
 	      }
-	    } else if ((*it2)->op == ">" && (*it2)->op2 == "-") {
-	      expr eq2 = (*decl_it1) - (*decl_it2) >  (*it2)->value;
+	} else if ((*it2)->op == ">" && (*it2)->op2 == "-") {
+	      expr eq2 = (decl_it1->second) - (decl_it2->second) >  (*it2)->value;
 	      s.add(eq2);
 	      if (s.check() == unsat) {
 		//cout << "unsat" << endl;
 		del_node((*it2));
 		goto PATH;
 	      }
-	    } else if ((*it2)->op == "=" && (*it2)->op2 == "") {
-	      expr eq2 = (*decl_it1) == (*decl_it2);
+	} else if ((*it2)->op == "=" && (*it2)->op2 == "") {
+	      expr eq2 = (decl_it1->second) == (decl_it2->second);
 	      s.add(eq2);
 	      //if (s.check() == unsat) {
 		//cout << "unsat " << endl;
 		//del_node((*it2));
 		//goto PATH;
 	      //}
-	    } else if ((*it2)->op == "" && (*it2)->op2 == ">") {
-	      expr eq2 = (*decl_it1) > (*decl_it2);
+	} else if ((*it2)->op == "" && (*it2)->op2 == ">") {
+	      expr eq2 = (decl_it1->second) > (decl_it2->second);
 	      s.add(eq2);
 	      if (s.check() == unsat) {
 		//cout << "unsat " << endl;
@@ -606,9 +602,6 @@ PATH:
 		goto PATH;
 	      }
 	    }
-	  }
-	}
-	}
       }
 
     }
