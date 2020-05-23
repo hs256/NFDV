@@ -1,0 +1,22 @@
+program rate_lim {
+  int token(sip&dip);
+  int ftag(sip&dip);
+
+  entry {
+    match_state { ftag == 1;}
+    action_flow {resubmit; }
+    action_state {token = 10000;}
+  }
+
+  entry {
+    match_state { ftag == 0; token < 80 }
+    action_flow {f[dip] = DROP; }
+  }
+
+  entry {
+    match_state { ftag == 0; token >= 80 }
+    action_flow { pass; }
+    action_state { token = token - 80; }
+  }
+
+}
