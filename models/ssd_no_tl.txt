@@ -1,0 +1,40 @@
+program ssd {
+  int list(sip&dip) = 0;
+  int threshold = 100;
+  float ratio = 0.8;
+  rule tcp_syn = flag_syn:1;
+  rule tcp_fin = flag_fin:1;
+
+
+  entry {
+    match_flow { f mismatches tcp_syn && f mismatches tcp_fin; }
+    action_flow { pass; }
+  }
+
+  entry {
+    match_flow { f matches tcp_syn; }
+    match_state { list < threshold; }
+    action_flow {pass; }
+    action_state { list = list + 1 ;}
+  }
+
+  entry {
+    match_flow { f matches tcp_syn; }
+    match_state { list >= threshold; }
+    action_flow { f[dip] = DROP; }
+  }
+
+  entry {
+    match_flow { f matches tcp_syn; }
+    action_flow { pass; }
+    action_state { list = list*ratio; }
+  }
+
+  entry {
+    match_flow { f matches tcp_fin; }
+    match_state { list > 0;}
+    action_flow {pass; }
+    action_state { list = list-1;}
+  }
+
+}

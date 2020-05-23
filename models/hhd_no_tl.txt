@@ -1,0 +1,42 @@
+program ssd {
+  int hh(sip&dip) = 0;
+  int hh_counter(sip&dip) = 0;
+  int threshold = 20;
+  int hhd_ts(sip&dip) = 0;
+  float ratio = 0.8;
+  rule tcp_syn = flag_syn:1;
+
+
+  entry {
+    match_flow { f mismatches tcp_syn; }
+    action_flow { pass; }
+  }
+
+  entry {
+    match_flow { f matches tcp_syn; }
+    match_state { hh != 1 ; hh_counter < threshold }
+    action_flow {pass; }
+    action_state { hh_counter = hh_counter + 1 ;}
+  }
+
+  entry {
+    match_flow { f matches tcp_syn; }
+    match_state { hh != 1 ; hh_counter >= threshold }
+    action_flow { pass; }
+    action_state { hh = 1; }
+  }
+
+  entry {
+    match_flow { f matches tcp_syn; }
+    match_state { hh == 1; }
+    action_flow { pass; }
+    action_state { hh = 0; hh_counter = hh_counter*ratio; }
+  }
+
+  entry {
+    match_flow { f matches tcp_syn; }
+    action_flow { pass; }
+    action_state { hh_counter = hh_counter*ratio; }
+  }
+
+}
