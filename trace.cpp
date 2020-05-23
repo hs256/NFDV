@@ -518,6 +518,7 @@ PATH:
       } else if ((*it2)->decl == 0 || (*it2)->decl == 2) {
 	map<string, expr>::iterator decl_it;
 	decl_it = decl_exprs.find((*it2)->a);
+	if (decl_it != decl_exprs.end()) {
 	  if ((*it2)->op == ">=") {
 	      expr eq2 = (decl_it->second) >=  (*it2)->value;
 	      s.add(eq2);
@@ -564,11 +565,13 @@ PATH:
 		goto PATH;
 	      }
 	  }
+	}
       } else if ((*it2)->decl == 3) {
 	map<string, expr>::iterator decl_it1;
 	decl_it1 = decl_exprs.find((*it2)->a);
 	map<string, expr>::iterator decl_it2;
 	decl_it2 = decl_exprs.find((*it2)->b);
+	if (decl_it1 != decl_exprs.end() && decl_it2 != decl_exprs.end()) {
 	if ((*it2)->op == "<=" && (*it2)->op2 == "-") {
 	      expr eq2 = (decl_it1->second) - (decl_it2->second) <=  (*it2)->value;
 	      s.add(eq2);
@@ -603,7 +606,7 @@ PATH:
 	      }
 	    }
       }
-
+    }
     }
     //cout << s.check() << endl;
   }

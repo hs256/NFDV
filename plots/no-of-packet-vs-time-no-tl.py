@@ -13,15 +13,12 @@ import numpy as np
 #    c=col[im]
 #    axe[r][c].scatter(getdata(), getdata())
 
-x = [1, 2, 3, 4]
-plt.plot(x, [0.298, 1.608, 7.473, 33.81], 'b-', label = 'PAN FW')
-plt.plot([1, 2, 3, 4], [3.188, 25.347, 253.54, 2493.11], 'r--', label = 'SSD')
-plt.plot([1, 2, 3, 4], [48.959, 195.232, 637.44, 1967.17], 'g-.', label = 'HHD')
-plt.plot([1, 2, 3, 4], [21.26, 240.20, 165.16, 4896.05], 'm.-.', label = 'SYN Flood')
-plt.plot([1, 2, 3, 4], [0.15, 0.76, 2.34, 5.925], 'k:', label = 'Rate limiter')
+plt.plot([1, 2, 3, 4], [0.137, 0.523, 1.6515, 5.0076], 'b-', label = 'PAN FW')
+plt.plot([1, 2, 3, 4], [0.321, 1.875, 9.732, 49.277], 'r--', label = 'SSD')
+plt.plot([1, 2, 3, 4], [0.1489, 0.4012, 0.9305, 1.979], 'g-.', label = 'HHD')
+plt.plot([1, 2, 3, 4], [0.659, 2.914, 8.331, 21.076], 'm.-.', label = 'SYN Flood')
+plt.plot([1, 2, 3, 4], [0.164, 0.719, 2.203, 5.520], 'k:', label = 'Rate limiter')
 plt.yscale('log')
-#xint = range(min(x), math.ceil(max(x)+1))
-#plt.xticks(xint)
 plt.xlabel('No. of packets')
 plt.ylabel('Time in s (log scale)')
 plt.legend()
