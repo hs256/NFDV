@@ -1,0 +1,35 @@
+program ssd {
+  int udpc(sip&dip) = 0;
+  int udp_flood(sip&dip) = 0;
+  int threshold = 100;
+  int udp_ts(sip&dip) = 0;
+  float ratio = 0.8;
+  rule timer_logic = f[Tsval] - ssd_ts <= 100;
+  rule udp_proto = proto:17;
+
+  entry {
+    match_flow { f mismatches udp_proto; }
+    action_flow { pass; }
+  }
+
+  entry {
+    match_flow { f matches udp_proto && f matches timer_logic; }
+    match_state { udpc < threshold; }
+    action_flow {pass; }
+    action_state { udpc = udpc + 1 ; udp_ts = f[tsval];}
+  }
+
+  entry {
+    match_flow { f matches udp_proto && f matches timer_logic; }
+    match_state { udpc >= threshold; }
+    action_flow {f[dip] = DROP; }
+    action_state { udp_ts = f[tsval];}
+  }
+
+  entry {
+    match_flow { f matches udp_proto && f mismatches timer_logic; }
+    action_flow { pass; }
+    action_state { udpc = udp_c*ratio; ssd_ts = f[Tsval]; }
+  }
+
+}
